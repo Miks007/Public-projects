@@ -1,0 +1,40 @@
+# Stop all running containers
+docker stop $(docker ps -aq)
+
+# Remove all containers
+docker rm $(docker ps -aq)
+# https://www.youtube.com/watch?v=5Gbbu5YaKNs
+
+
+# Remove all images
+docker rmi $(docker images -aq)
+
+
+
+
+# Build image
+docker build -t iris-rf-app .
+
+
+docker buildx install
+docker buildx create --use
+docker build --platform linux/amd64 -t  crflaskapp.azurecr.io/iris-rf-app:latest --output type=docker .
+
+# Check images
+docker images
+
+# Run app
+docker run -d -p 5001:5001 iris-rf-app
+
+
+# Next steps:
+# 1. Create Azure Container Registry and login in terminal:
+# docker login <Login server from Azure>
+docker login crflaskapp.azurecr.io
+# username and password are from Access keys (admin), password wont be shown in terminal, its encrypted
+# 2. Push the image to Container Registry
+# docker push <Login server>/<image name>:<tag>
+docker push crflaskapp.azurecr.io/iris-rf-app:latest
+# It should become visiblie in Repositories in Azure Portal
+# 3. Create Container App, in 'Container' define the image, Ingress Yes and acepting traffic from anywhere and target port
+
