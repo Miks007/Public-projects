@@ -1,0 +1,13 @@
+train: YOUR_PATH/train/images
+val: YOUR_PATH/valid/images
+test: YOUR_PATH/test/images
+
+nc: 4
+names: ['device', 'live', 'mask', 'photo']
+
+roboflow:
+  workspace: joaoissamu
+  project: objectdetect-fs9hx
+  version: 1
+  license: MIT
+  url: https://universe.roboflow.com/joaoissamu/objectdetect-fs9hx/dataset/1
