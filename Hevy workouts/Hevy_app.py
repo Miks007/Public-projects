@@ -39,7 +39,7 @@ max_date = df['end_time'].max().date()
 #######################################
 
 choice = st.radio('Choose analysis option',
-         ['Overall', 'Period comparison', 'Muscle'],
+         ['Overall', 'Period comparison', 'Muscle' ],
          horizontal=True)
 
 
@@ -53,7 +53,7 @@ if choice == 'Overall':
             if col == filters_row[0]:
                 # Add a slider to the Streamlit app for selecting a date
                 selected_date = st.slider(
-                    "Select a date",
+                    "Select date range",
                     min_value = min_date,
                     max_value = max_date,
                     value=(min_date, max_date),  # Default value
