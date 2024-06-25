@@ -26,7 +26,7 @@ df['month'] = df['start_time'].dt.month
 
  
 st.write("""
-# Heavy workouts analysis
+# Hevy workouts analysis
 Hello *world!*
 """)
 
