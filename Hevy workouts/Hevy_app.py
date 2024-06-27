@@ -11,6 +11,11 @@ import matplotlib.pyplot as plt
 from find_recent_workout_file import find_recent_workout_file
 from human_body_painting import paint
 
+
+def aggregate_to_list(series):
+        # Filter out NaN values and convert to list
+        return series.dropna().tolist()
+
 # Specify the path to the directory you want to set as the working directory
 app_directory = r'C:\Users\MikolajPawlak\Documents\GitHub\Public-projects\Hevy workouts'
 
@@ -193,6 +198,31 @@ elif choice == 'Muscle':
     col1, col2 = st.columns([2.55,1])
     col1.dataframe(df[['workout_title', 'excercise_title', 'primary', 'secondary', 'weight_kg', 'reps', 'distance_meters', 'duration_seconds']])
     
+
+    df_temp = df[['workout_id', 'workout_title', 'excercise_title', 'primary', 'secondary', 'weight_kg', 'reps', 'distance_meters', 'duration_seconds']]
+
+    # Group by 'excercise_title' and aggregate using the custom function
+    grouped = df.groupby('excercise_title').agg({
+    'reps': aggregate_to_list,
+    'weight_kg': aggregate_to_list,
+    'distance_meters': aggregate_to_list,
+    'duration_seconds': aggregate_to_list
+    }).reset_index()
+
+    # Rename columns in a more concise way
+    grouped.columns = ['excercise_title', 'max_reps', 'max_weight_kg', 'max_distance_meters', 'max_duration_seconds']
+
+    col1.dataframe(
+    grouped,
+    column_config={
+        "excercise_title": "excercise_title",
+        "max_reps": st.column_config.LineChartColumn("max_reps"),
+        "max_weight_kg": st.column_config.LineChartColumn("max_weight_kg"),
+        "max_distance_meters": st.column_config.LineChartColumn("max_distance_meters"),
+        "max_duration_seconds": st.column_config.LineChartColumn("max_duration_seconds"),
+        
+    })
+
 
     # Show image
     image = paint(primary_muscle_groups_choice, secondary_muscle_groups_choice)
