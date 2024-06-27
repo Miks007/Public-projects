@@ -1,0 +1,13 @@
+🌟 Muscle tab:
+- modify line chart:
+    - max_duration_seconds -> change to minutes
+    - add max volume 
+    - check if bar chart doest work better than the line 
+
+- add exercise selectbox  
+- add exercise with reps preview
+- finish body paiting coordinates 
+- add personal records
+- add KPI - if you choose an exercise show reps, weight and volume (show the change - if it raised or fell)
+
+🌟 find_recent_workout_file.py:
