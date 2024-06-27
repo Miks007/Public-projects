@@ -55,20 +55,42 @@ def paint(primary, secondary):
     left_low_left_thigh = [(163.15967365967367, 534.6981351981353), (164.465034965035, 571.2482517482518), (173.6025641025641, 607.7983682983684), (180.12937062937067, 628.6841491841492), (186.65617715617714, 636.5163170163171), (187.96153846153845, 626.0734265734267), (186.65617715617714, 611.7144522144523), (177.51864801864804, 594.7447552447553), (170.99184149184146, 563.4160839160841), (165.7703962703963, 542.5303030303031), (165.7703962703963, 534.6981351981353), (163.15967365967367, 534.6981351981353)]
     left_low_right_thigh = [(210.1526806526806, 566.0268065268066), (211.45804195804192, 596.0501165501166), (206.23659673659677, 627.378787878788), (211.45804195804192, 639.1270396270397), (216.67948717948718, 639.1270396270397), (219.29020979020981, 631.2948717948718), (220.59557109557113, 607.7983682983684), (216.67948717948718, 582.9965034965036), (212.76340326340323, 571.2482517482518), (210.1526806526806, 566.0268065268066), (211.45804195804192, 568.6375291375292), (211.45804195804192, 568.6375291375292)]
 
-    body_dict = {'klatka': [left_chest, right_chest],
-                'brzuch':  [left_top_trunk, left_mid_top_trunk, left_mid_low_trunk, left_low_trunk, right_top_trunk, right_mid_top_trunk, right_mid_low_trunk, right_low_trunk,],
-                'nogi': [right_top_low_thigh, right_top_top_thigh, right_mid_long_thigh, right_big_mid_thigh, right_low_right_thigh, right_low_left_thigh, left_top_low_thigh, left_top_top_thigh, left_mid_long_thigh, left_big_mid_thigh, left_low_left_thigh, left_low_right_thigh ]}
+    body_dict = {'Chest': [left_chest, right_chest],
+                 'Back': [],
+                 'Shoulders':[right_front_shoulder, left_front_shoulder],
+                 'Arms':[right_top_forearm, right_mid_forearm, right_low_forearm, right_left_biceps, right_right_biceps, left_low_forearm, left_mid_forearm, left_top_forearm, left_right_biceps, left_left_biceps],
+                 'Core':  [left_top_trunk, left_mid_top_trunk, left_mid_low_trunk, left_low_trunk, right_top_trunk, right_mid_top_trunk, right_mid_low_trunk, right_low_trunk,],
+                 'Legs': [right_top_low_thigh, right_top_top_thigh, right_mid_long_thigh, right_big_mid_thigh, right_low_right_thigh, right_low_left_thigh, left_top_low_thigh, left_top_top_thigh, left_mid_long_thigh, left_big_mid_thigh, left_low_left_thigh, left_low_right_thigh ]}
     
     image_path = r'C:\Users\MikolajPawlak\Documents\GitHub\Public-projects\Hevy workouts\human_body.jpg'
     image = Image.open(image_path)
     draw = ImageDraw.Draw(image)
 
-    for body_part, color in [(primary, 200), (secondary, 125)]:
-        coordinates_list = body_dict[body_part]
-        for cords in coordinates_list:
-            # Convert coordinates to integer tuples
-            polygon_coords = [(int(x), int(y)) for x, y in cords]
-            fill_color = (color, 0, 0, 125)  # 128 is 50% transparency (255 is fully opaque, 0 is fully transparent)
-            # Draw the polygon with specified fill and outline colors
-            draw.polygon(polygon_coords, outline='red', fill=fill_color)
+    if ('All' in primary and len(primary)>=1) or (not 'All' in primary):
+        try:
+            primary.remove('All')
+        except:
+            pass
+        for body_part in primary:
+            coordinates_list = body_dict[body_part]
+            for cords in coordinates_list:
+                # Convert coordinates to integer tuples
+                polygon_coords = [(int(x), int(y)) for x, y in cords]
+                fill_color = (200, 0, 0, 125)  # 128 is 50% transparency (255 is fully opaque, 0 is fully transparent)
+                # Draw the polygon with specified fill and outline colors
+                draw.polygon(polygon_coords, outline='red', fill=fill_color)
+
+    if ('All' in secondary and len(secondary)>=1) or (not 'All' in secondary):
+        try:
+            secondary.remove('All')
+        except:
+            pass
+        for body_part in secondary:
+            coordinates_list = body_dict[body_part]
+            for cords in coordinates_list:
+                # Convert coordinates to integer tuples
+                polygon_coords = [(int(x), int(y)) for x, y in cords]
+                fill_color = (125, 0, 0, 125)  # 128 is 50% transparency (255 is fully opaque, 0 is fully transparent)
+                # Draw the polygon with specified fill and outline colors
+                draw.polygon(polygon_coords, outline='red', fill=fill_color)
     return image
