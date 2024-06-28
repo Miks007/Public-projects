@@ -31,6 +31,8 @@ df['start_time'] = pd.to_datetime(df['start_time'])
 df['end_time'] = pd.to_datetime(df['end_time'])
 df['year'] = df['start_time'].dt.year.astype(str)
 df['month'] = df['start_time'].dt.month
+df['duration_seconds'] = df['duration_seconds']/60
+df.rename(columns={'duration_seconds': 'duration_minutes'}, inplace= True)
 min_date = df['start_time'].min().date()
 max_date = df['end_time'].max().date()
 
@@ -64,16 +66,15 @@ if choice == 'Overall':
                 )
             if col == filters_row[1]:
                 # Add a dropbox to choose muslce groups
-                muscle_groups = ['All','Back', 'Chest', 'Core', 'Shoulders', 'Arms', 'Legs']
-                muscle_groups_choice = eval(str(st.multiselect("Muscle group", muscle_groups, default='All', placeholder="Choose an option", disabled=False, label_visibility="visible")))
+                muscle_groups = ['Back', 'Chest', 'Core', 'Shoulders', 'Arms', 'Legs']
+                muscle_groups_choice = eval(str(st.multiselect("Muscle group", muscle_groups, default=None, placeholder="Choose an option", disabled=False, label_visibility="visible")))
     
     # Filter the dataframe
     # 1. Date
     df = df[(df['start_time'].dt.date >= selected_date[0])  & (df['end_time'].dt.date <= selected_date[1])]
     # 2. Muscle, don't filter if:
-    # - if All is selected
     # - if nothing is selected
-    if not ('All' in muscle_groups_choice) and len(muscle_groups_choice)>0:
+    if len(muscle_groups_choice)>0:
         df = df[(df['primary'].isin(muscle_groups_choice)) | (df['secondary'].isin(muscle_groups_choice))]
 
 
@@ -155,30 +156,29 @@ elif choice == 'Muscle':
                 )
             if col == filters_row[1]:
                 # Add a dropbox to choose muslce groups
-                muscle_groups_primary = ['All','Back', 'Chest', 'Core', 'Shoulders', 'Arms', 'Legs']
-                primary_muscle_groups_choice = st.multiselect("Primary muscle group", muscle_groups_primary, default='All', placeholder="Choose an option", disabled=False, label_visibility="visible")
+                muscle_groups_primary = ['Back', 'Chest', 'Core', 'Shoulders', 'Arms', 'Legs']
+                primary_muscle_groups_choice = st.multiselect("Primary muscle group", muscle_groups_primary, default=None, placeholder="Choose an option", disabled=False, label_visibility="visible")
 
             if col == filters_row[2]:
                 # Add a dropbox to choose muslce groups
-                muscle_groups = ['All','Back', 'Chest', 'Core', 'Shoulders', 'Arms', 'Legs']
-                muscle_groups_secondary = ['All'] + [m for m in muscle_groups if m not in primary_muscle_groups_choice and m != 'All']
-                secondary_muscle_groups_choice = st.multiselect("Secondary muscle group", muscle_groups_secondary, default='All', placeholder="Choose an option", disabled=False, label_visibility="visible")
+                muscle_groups = ['Back', 'Chest', 'Core', 'Shoulders', 'Arms', 'Legs']
+                muscle_groups_secondary =  [m for m in muscle_groups if m not in primary_muscle_groups_choice]
+                secondary_muscle_groups_choice = st.multiselect("Secondary muscle group", muscle_groups_secondary, default=None, placeholder="Choose an option", disabled=False, label_visibility="visible")
 
     # Filter the dataframe
     # 1. Date
     df = df[(df['start_time'].dt.date >= selected_date[0])  & (df['end_time'].dt.date <= selected_date[1])]
     # 2. Muscle, don't filter if:
-    # - if All is selected
     # - if nothing is selected
-    if not ('All' in primary_muscle_groups_choice) and len(primary_muscle_groups_choice)>0:
+    if len(primary_muscle_groups_choice)>0:
         df = df[(df['primary'].isin(primary_muscle_groups_choice))]
-    if not ('All' in secondary_muscle_groups_choice) and len(secondary_muscle_groups_choice)>0:
+    if len(secondary_muscle_groups_choice)>0:
         df = df[(df['secondary'].isin(secondary_muscle_groups_choice))]
 
     st.dataframe(df)
 
     st.dataframe(
-    df[['workout_title', 'excercise_title', 'primary', 'secondary', 'weight_kg', 'reps', 'distance_meters', 'duration_seconds']],
+    df[['workout_title', 'excercise_title', 'primary', 'secondary', 'weight_kg', 'reps', 'distance_meters', 'duration_minutes']],
     column_config={
         "workout_title": "workout_title",
         "excercise_title": "excercise_title",
@@ -187,7 +187,7 @@ elif choice == 'Muscle':
         "weight_kg": "weight_kg",
         "reps": "reps",
         "distance_meters": "distance_meters",
-        "duration_seconds": "duration_seconds",
+        "duration_minutes": "duration_minutes",
         "weight_kg_time": st.column_config.LineChartColumn(
             "Views (past 30 days)", y_min=0, y_max=5000
         ),
@@ -196,30 +196,30 @@ elif choice == 'Muscle':
 )
     
     col1, col2 = st.columns([2.55,1])
-    col1.dataframe(df[['workout_title', 'excercise_title', 'primary', 'secondary', 'weight_kg', 'reps', 'distance_meters', 'duration_seconds']])
+    col1.dataframe(df[['workout_title', 'excercise_title', 'primary', 'secondary', 'weight_kg', 'reps', 'distance_meters', 'duration_minutes']])
     
 
-    df_temp = df[['workout_id', 'workout_title', 'excercise_title', 'primary', 'secondary', 'weight_kg', 'reps', 'distance_meters', 'duration_seconds']]
+    df_temp = df[['workout_id', 'workout_title', 'excercise_title', 'primary', 'secondary', 'weight_kg', 'reps', 'distance_meters', 'duration_minutes']]
 
     # Group by 'excercise_title' and aggregate using the custom function
     grouped = df.groupby('excercise_title').agg({
     'reps': aggregate_to_list,
     'weight_kg': aggregate_to_list,
     'distance_meters': aggregate_to_list,
-    'duration_seconds': aggregate_to_list
+    'duration_minutes': aggregate_to_list
     }).reset_index()
 
     # Rename columns in a more concise way
-    grouped.columns = ['excercise_title', 'max_reps', 'max_weight_kg', 'max_distance_meters', 'max_duration_seconds']
+    grouped.columns = ['excercise_title', 'max_reps', 'max_weight_kg', 'max_distance_meters', 'max_duration_minutes']
 
     col1.dataframe(
     grouped,
     column_config={
         "excercise_title": "excercise_title",
-        "max_reps": st.column_config.LineChartColumn("max_reps"),
-        "max_weight_kg": st.column_config.LineChartColumn("max_weight_kg"),
-        "max_distance_meters": st.column_config.LineChartColumn("max_distance_meters"),
-        "max_duration_seconds": st.column_config.LineChartColumn("max_duration_seconds"),
+        "max_reps": st.column_config.BarChartColumn("max_reps"),
+        "max_weight_kg": st.column_config.BarChartColumn("max_weight_kg"),
+        "max_distance_meters": st.column_config.BarChartColumn("max_distance_meters"),
+        "max_duration_minutes": st.column_config.BarChartColumn("max_duration_minutes"),
         
     })
 
