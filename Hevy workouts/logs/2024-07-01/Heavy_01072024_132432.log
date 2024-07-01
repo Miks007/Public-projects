@@ -1,0 +1,32 @@
+
+2024-07-01 13:24:33,948 [INFO] Workout count: 123
+
+2024-07-01 13:24:33,958 [INFO] Fetching workouts from page: 1 (pageSize:10)
+
+2024-07-01 13:24:35,408 [INFO] Fetching workouts from page: 2 (pageSize:10)
+
+2024-07-01 13:24:36,618 [INFO] Fetching workouts from page: 3 (pageSize:10)
+
+2024-07-01 13:24:37,961 [INFO] Fetching workouts from page: 4 (pageSize:10)
+
+2024-07-01 13:24:39,080 [INFO] Fetching workouts from page: 5 (pageSize:10)
+
+2024-07-01 13:24:40,722 [INFO] Fetching workouts from page: 6 (pageSize:10)
+
+2024-07-01 13:24:42,048 [INFO] Fetching workouts from page: 7 (pageSize:10)
+
+2024-07-01 13:24:43,487 [INFO] Fetching workouts from page: 8 (pageSize:10)
+
+2024-07-01 13:24:44,951 [INFO] Fetching workouts from page: 9 (pageSize:10)
+
+2024-07-01 13:24:46,143 [INFO] Fetching workouts from page: 10 (pageSize:10)
+
+2024-07-01 13:24:47,377 [INFO] Fetching workouts from page: 11 (pageSize:10)
+
+2024-07-01 13:24:48,598 [INFO] Fetching workouts from page: 12 (pageSize:10)
+
+2024-07-01 13:24:49,731 [INFO] Fetching workouts from page: 13 (pageSize:10)
+
+2024-07-01 13:24:50,648 [INFO] Fetch done. Total workouts got: 123
+
+2024-07-01 13:26:25,385 [INFO] Workouts data saved to: hevy_workouts_2024_07_01.csv)

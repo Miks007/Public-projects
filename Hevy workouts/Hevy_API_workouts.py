@@ -5,6 +5,7 @@ import math
 import logging
 from datetime import datetime
 import os
+import tqdm
 
 def setup_logging():
     global log_file, log_dir, bot_result
@@ -23,7 +24,7 @@ def setup_logging():
             logging.StreamHandler(),
         ]
     )
-    
+
 def load_config():
     try:
         # Define credentials
@@ -165,6 +166,29 @@ def get_workouts(HEAVY_API_KEY, page = int, pageSize = int):
     except Exception as e:
         logging.error(f"Error: Error during workouts fetch \n {str(e)}")
 
+def get_templates(HEAVY_API_KEY, df):
+    try:
+        df_decoded_templates = pd.DataFrame()
+        data_list = []
+        logging.info(f'Found {len(df.exercise_template_id.unique())} unique templates to decode. Starting to decode ...')
+        for template_id in tqdm.tqdm(df.exercise_template_id.unique()):
+            url = f'https://api.hevyapp.com/v1/exercise_templates/{template_id}'
+            headers = {
+                'accept': 'application/json',
+                'api-key': HEAVY_API_KEY
+            }
+
+            response = requests.get(url, headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                data_list.append(data)
+                df_decoded_templates = pd.DataFrame(data_list)
+        logging.info(f"All templates decoded.")
+        df_full = df.merge(df_decoded_templates, how = 'left', left_on= 'exercise_template_id', right_on='id')
+        return df_full
+    except Exception as e:
+        logging.error(f"Error: Error during reading config.ini file \n {str(e)}")
+
 # Define the main function
 def main():
     try:
@@ -183,6 +207,7 @@ def main():
         df_sets = pd.DataFrame()
 
         # Get all workouts based on workcout_count
+        logging.info(f'Fetching workouts from {math.ceil(workout_count/10)} pages.')
         for page in range(math.ceil(workout_count/10)):
             page = page + 1 
             df_workouts_temp, df_exercises_temp, df_sets_temp = get_workouts(HEAVY_API_KEY,page,10)
@@ -194,16 +219,19 @@ def main():
         logging.info(f'Fetch done. Total workouts got: {str(len(df_workouts))}')
 
         # Merge all dataframes
-        df_full = pd.merge(df_workouts, df_exercises, how = 'left', on= 'workout_id')
-        df_full = pd.merge(df_full, df_sets, how = 'left', on= ['workout_id', 'exercise_index'])
+        df_merged = pd.merge(df_workouts, df_exercises, how = 'left', on= 'workout_id')
+        df_merged = pd.merge(df_merged, df_sets, how = 'left', on= ['workout_id', 'exercise_index'])
         
         # Adjust column names
-        df_full.rename(columns={'title_x': 'workout_title', 'title_y': 'excercise_title'}, inplace= True)
-        
+        df_merged.rename(columns={'title_x': 'workout_title', 'title_y': 'excercise_title'}, inplace= True)
+
+        # Decode templates 
+        df_full = get_templates(HEAVY_API_KEY, df_merged)
+
         # Save data to a csv file
         file_name = 'hevy_workouts_' + datetime.now().strftime('%Y_%m_%d') + '.csv'
         df_full.to_csv(file_name)
-        logging.info(f'Data saved to: {file_name})')
+        logging.info(f'Workouts data saved to: {file_name})')
     except Exception as e:
         logging.error(f'Error in main: {str(e)}')
 
