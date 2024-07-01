@@ -10,5 +10,4 @@
 - add KPI - if you choose an exercise show reps, weight and volume (show the change - if it raised or fell)
 
 🌟 find_recent_workout_file.py:
-- add try execptions 
 - comment code
