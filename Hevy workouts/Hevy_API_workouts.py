@@ -6,6 +6,24 @@ import logging
 from datetime import datetime
 import os
 
+def setup_logging():
+    global log_file, log_dir, bot_result
+    bot_result = {}
+    # Create a 'logs' directory
+    log_dir = os.path.join(os.getcwd(), 'logs', datetime.now().strftime('%Y-%m-%d'))
+    os.makedirs(log_dir, exist_ok=True)
+
+    # Configure the logging module
+    log_file = os.path.join(log_dir, f'Heavy_{datetime.now().strftime("%d%m%Y_%H%M%S")}.log')
+    logging.basicConfig(
+        level=logging.INFO,
+        format='\n%(asctime)s [%(levelname)s] %(message)s',
+        handlers=[
+            logging.FileHandler(log_file),
+            logging.StreamHandler(),
+        ]
+    )
+    
 def load_config():
     try:
         # Define credentials
@@ -146,24 +164,6 @@ def get_workouts(HEAVY_API_KEY, page = int, pageSize = int):
             logging.error(f"Failed to retrieve data: {response.status_code}")
     except Exception as e:
         logging.error(f"Error: Error during workouts fetch \n {str(e)}")
-
-def setup_logging():
-    global log_file, log_dir, bot_result
-    bot_result = {}
-    # Create a 'logs' directory
-    log_dir = os.path.join(os.getcwd(), 'logs', datetime.now().strftime('%Y-%m-%d'))
-    os.makedirs(log_dir, exist_ok=True)
-
-    # Configure the logging module
-    log_file = os.path.join(log_dir, f'Heavy_{datetime.now().strftime("%d%m%Y_%H%M%S")}.log')
-    logging.basicConfig(
-        level=logging.INFO,
-        format='\n%(asctime)s [%(levelname)s] %(message)s',
-        handlers=[
-            logging.FileHandler(log_file),
-            logging.StreamHandler(),
-        ]
-    )
 
 # Define the main function
 def main():
