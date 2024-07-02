@@ -18,3 +18,23 @@ Below you'll find information about the most recent projects and their purposes.
 
 ● **Status**: Completed ✅
 
+### 3. Correcting Document Rotation 📄
+● **Description**: This project corrects document rotation using various computer vision tools, including Hough lines and pytesseract OCR, to properly align text and images.
+
+● **Purpose**: To work with images and learn different image processing techniques.
+
+● **Status**: Completed ✅
+
+### 4. Find Circles with Dots 🎯
+● **Description**: This project uses computer vision tools to detect shapes (circles) and determine which of them contain dots. The tools used include HoughCircles and cv2.SimpleBlobDetector.
+
+● **Purpose**: To explore and learn computer vision detection tools.
+
+● **Status**: Completed ✅
+
+### 5. Find Differences Between Two Images 🔍
+● **Description**: This project involves identifying small differences between two almost identical images of Rick and Morty using computer vision tools. The tools used include cv2 preprocessing, ImageChops difference and cv2 absolute difference.
+
+● **Purpose**: To use computer vision tools to detect subtle differences between images.
+
+● **Status**: Completed ✅
