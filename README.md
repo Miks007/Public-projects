@@ -11,3 +11,10 @@ Below you'll find information about the most recent projects and their purposes.
 
 ● **Status:** In Progress 👨‍💻
 
+### 2. Customer Shopping Trends - Tableau 📊
+● **Description**: This project involves analyzing shopping trends using Tableau. By visualizing various datasets, it provides insights into customer behavior and purchasing patterns.
+
+● **Purpose**: To develop and enhance Tableau skills while gaining a deeper understanding of data visualization techniques.
+
+● **Status**: Completed ✅
+
