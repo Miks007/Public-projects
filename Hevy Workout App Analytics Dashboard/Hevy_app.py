@@ -182,28 +182,12 @@ elif choice == 'Muscle':
     if len(secondary_muscle_groups_choice)>0:
         df = df[(df['secondary_muscle_groups'].isin(secondary_muscle_groups_choice))]
 
+    df['primary_muscle_group'] = [[muscle] for muscle in df['primary_muscle_group']]
     st.dataframe(df)
-
-    st.dataframe(
-    df[['workout_title', 'excercise_title', 'primary_muscle_group', 'secondary_muscle_groups', 'weight_kg', 'reps', 'distance_meters', 'duration_minutes']],
-    column_config={
-        "workout_title": "workout_title",
-        "excercise_title": "excercise_title",
-        "primary_muscle_groups": "primary_muscle_groups",
-        "secondary_muscle_groups": "secondary_muscle_groups",
-        "weight_kg": "weight_kg",
-        "reps": "reps",
-        "distance_meters": "distance_meters",
-        "duration_minutes": "duration_minutes",
-        "weight_kg_time": st.column_config.LineChartColumn(
-            "Views (past 30 days)", y_min=0, y_max=5000
-        ),
-    },
-    hide_index=True,
-)
     
-    col1, col2 = st.columns([2.55,1])
-    col1.dataframe(df[['workout_title', 'excercise_title', 'primary_muscle_group', 'secondary_muscle_groups', 'weight_kg', 'reps', 'distance_meters', 'duration_minutes']])
+    #col1, col2 = st.columns([2.55,1])
+    col1, col2 = st.columns([2.75,1])
+    col1.dataframe(df[['workout_title', 'excercise_title', 'primary_muscle_group', 'secondary_muscle_groups', 'weight_kg', 'reps', 'distance_meters', 'duration_minutes', 'is_custom']])
     
 
     df_temp = df[['workout_id', 'workout_title', 'excercise_title', 'primary_muscle_group', 'secondary_muscle_groups', 'weight_kg', 'reps', 'distance_meters', 'duration_minutes']]
@@ -213,7 +197,7 @@ elif choice == 'Muscle':
     'reps': aggregate_to_list,
     'weight_kg': aggregate_to_list,
     'distance_meters': aggregate_to_list,
-    'duration_minutes': aggregate_to_list
+    'duration_minutes': aggregate_to_list,
     }).reset_index()
 
     # Rename columns in a more concise way

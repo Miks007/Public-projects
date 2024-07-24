@@ -9,5 +9,9 @@
 - add personal records
 - add KPI - if you choose an exercise show reps, weight and volume (show the change - if it raised or fell)
 
+
 🌟 decode_templates.py
 - integrate with Hevy.app
+
+🌟 ALL TABS:
+- experiment with highlighting rows in dataframes
