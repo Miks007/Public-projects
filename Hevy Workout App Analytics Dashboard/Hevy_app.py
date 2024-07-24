@@ -183,7 +183,6 @@ elif choice == 'Muscle':
         df = df[(df['secondary_muscle_groups'].isin(secondary_muscle_groups_choice))]
 
     df['primary_muscle_group'] = [[muscle] for muscle in df['primary_muscle_group']]
-    st.dataframe(df)
     
     #col1, col2 = st.columns([2.55,1])
     col1, col2 = st.columns([2.75,1])
@@ -201,20 +200,29 @@ elif choice == 'Muscle':
     }).reset_index()
 
     # Rename columns in a more concise way
-    grouped.columns = ['excercise_title', 'max_reps', 'max_weight_kg', 'max_distance_meters', 'max_duration_minutes']
+    # grouped['max_reps'] = str(int(max(set(max(grouped["reps"])))))
+    # grouped['max_weight_kg'] = str(int(max(set(max(grouped["weight_kg"])))))
+    # grouped['max_distance_meters'] = str(int(max(set(max(grouped["distance_meters"])))))
+    # grouped['max_duration_minutes'] = str(int(max(set(max(grouped["duration_minutes"])))))
 
-    col1.dataframe(
+    st.dataframe(
     grouped,
     column_config={
         "excercise_title": "excercise_title",
-        "max_reps": st.column_config.BarChartColumn("max_reps"),
-        "max_weight_kg": st.column_config.BarChartColumn("max_weight_kg"),
-        "max_distance_meters": st.column_config.BarChartColumn("max_distance_meters"),
-        "max_duration_minutes": st.column_config.BarChartColumn("max_duration_minutes"),
+        "max_reps": "max_reps",
+        "reps": st.column_config.BarChartColumn("reps"),
+        
+        "weight_kg": st.column_config.BarChartColumn("weight_kg"),
+        "max_weight_kg": "max_weight_kg",
+        "distance_meters": st.column_config.BarChartColumn("distance_meters"),
+        "max_weight_kg": "max_weight_kg",
+        "duration_minutes": st.column_config.BarChartColumn("duration_minutes"),
+        "max_duration_minutes": "max_duration_minutes",
         
     })
 
-
+#
+ # "max_weight_kg": str(set(max(grouped["max_weight_kg"]))),
     # Show image
     image = paint(primary_muscle_groups_choice, secondary_muscle_groups_choice)
     new_size = (int(image.width // 2.5), int(image.height // 2.5))
