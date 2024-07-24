@@ -1,4 +1,5 @@
-#  Start with command -  streamlit run "C:\Users\MikolajPawlak\Documents\GitHub\Public-projects\Hevy workouts\Hevy_app.py"
+#  Start with command:
+#  streamlit run "C:\Users\MikolajPawlak\Documents\GitHub\Public-projects\Hevy Workout App Analytics Dashboard\Hevy_app.py"
 import streamlit as st
 import pandas as pd
 import os
@@ -6,6 +7,7 @@ import io
 from PIL import Image, ImageDraw
 import datetime
 import matplotlib.pyplot as plt
+import ast
 
 
 from find_recent_workout_file import find_recent_workout_file
@@ -17,7 +19,7 @@ def aggregate_to_list(series):
         return series.dropna().tolist()
 
 # Specify the path to the directory you want to set as the working directory
-app_directory = r'C:\Users\MikolajPawlak\Documents\GitHub\Public-projects\Hevy workouts'
+app_directory = r'C:\Users\MikolajPawlak\Documents\GitHub\Public-projects\Hevy Workout App Analytics Dashboard'
 
 # Change the current working directory to the specified directory
 os.chdir(app_directory)
@@ -32,6 +34,11 @@ df['end_time'] = pd.to_datetime(df['end_time'])
 df['year'] = df['start_time'].dt.year.astype(str)
 df['month'] = df['start_time'].dt.month
 df['duration_seconds'] = df['duration_seconds']/60
+# Capitalize muscle names
+df['primary_muscle_group'] = [muscle_name.capitalize() for muscle_name in df['primary_muscle_group']]
+df['secondary_muscle_groups'] = [[item.capitalize() for item in ast.literal_eval(lst)] for lst in df['secondary_muscle_groups']]
+
+
 df.rename(columns={'duration_seconds': 'duration_minutes'}, inplace= True)
 min_date = df['start_time'].min().date()
 max_date = df['end_time'].max().date()
@@ -75,7 +82,7 @@ if choice == 'Overall':
     # 2. Muscle, don't filter if:
     # - if nothing is selected
     if len(muscle_groups_choice)>0:
-        df = df[(df['primary'].isin(muscle_groups_choice)) | (df['secondary'].isin(muscle_groups_choice))]
+        df = df[(df['primary_muscle_group'].isin(muscle_groups_choice)) | (df['secondary_muscle_group'].isin(muscle_groups_choice))]
 
 
     #######################################
@@ -156,34 +163,34 @@ elif choice == 'Muscle':
                 )
             if col == filters_row[1]:
                 # Add a dropbox to choose muslce groups
-                muscle_groups_primary = ['Back', 'Chest', 'Core', 'Shoulders', 'Arms', 'Legs']
+                muscle_groups_primary = sorted(df.primary_muscle_group.unique())
                 primary_muscle_groups_choice = st.multiselect("Primary muscle group", muscle_groups_primary, default=None, placeholder="Choose an option", disabled=False, label_visibility="visible")
-
+                
             if col == filters_row[2]:
                 # Add a dropbox to choose muslce groups
-                muscle_groups = ['Back', 'Chest', 'Core', 'Shoulders', 'Arms', 'Legs']
+                muscle_groups = sorted(df.primary_muscle_group.unique())
                 muscle_groups_secondary =  [m for m in muscle_groups if m not in primary_muscle_groups_choice]
                 secondary_muscle_groups_choice = st.multiselect("Secondary muscle group", muscle_groups_secondary, default=None, placeholder="Choose an option", disabled=False, label_visibility="visible")
-
+                
     # Filter the dataframe
     # 1. Date
     df = df[(df['start_time'].dt.date >= selected_date[0])  & (df['end_time'].dt.date <= selected_date[1])]
     # 2. Muscle, don't filter if:
     # - if nothing is selected
     if len(primary_muscle_groups_choice)>0:
-        df = df[(df['primary'].isin(primary_muscle_groups_choice))]
+        df = df[(df['primary_muscle_group'].isin(primary_muscle_groups_choice))]
     if len(secondary_muscle_groups_choice)>0:
-        df = df[(df['secondary'].isin(secondary_muscle_groups_choice))]
+        df = df[(df['secondary_muscle_groups'].isin(secondary_muscle_groups_choice))]
 
     st.dataframe(df)
 
     st.dataframe(
-    df[['workout_title', 'excercise_title', 'primary', 'secondary', 'weight_kg', 'reps', 'distance_meters', 'duration_minutes']],
+    df[['workout_title', 'excercise_title', 'primary_muscle_group', 'secondary_muscle_groups', 'weight_kg', 'reps', 'distance_meters', 'duration_minutes']],
     column_config={
         "workout_title": "workout_title",
         "excercise_title": "excercise_title",
-        "primary": "primary",
-        "secondary": "secondary",
+        "primary_muscle_groups": "primary_muscle_groups",
+        "secondary_muscle_groups": "secondary_muscle_groups",
         "weight_kg": "weight_kg",
         "reps": "reps",
         "distance_meters": "distance_meters",
@@ -196,10 +203,10 @@ elif choice == 'Muscle':
 )
     
     col1, col2 = st.columns([2.55,1])
-    col1.dataframe(df[['workout_title', 'excercise_title', 'primary', 'secondary', 'weight_kg', 'reps', 'distance_meters', 'duration_minutes']])
+    col1.dataframe(df[['workout_title', 'excercise_title', 'primary_muscle_group', 'secondary_muscle_groups', 'weight_kg', 'reps', 'distance_meters', 'duration_minutes']])
     
 
-    df_temp = df[['workout_id', 'workout_title', 'excercise_title', 'primary', 'secondary', 'weight_kg', 'reps', 'distance_meters', 'duration_minutes']]
+    df_temp = df[['workout_id', 'workout_title', 'excercise_title', 'primary_muscle_group', 'secondary_muscle_groups', 'weight_kg', 'reps', 'distance_meters', 'duration_minutes']]
 
     # Group by 'excercise_title' and aggregate using the custom function
     grouped = df.groupby('excercise_title').agg({

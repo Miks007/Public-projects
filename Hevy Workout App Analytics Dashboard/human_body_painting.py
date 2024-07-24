@@ -119,24 +119,64 @@ def paint(primary, secondary):
     left_trapezius = [(723.1596736596736, 329.7564102564104), (728.3811188811186, 371.52797202797217), (724.4650349650348, 428.9638694638696), (691.8310023310022, 409.38344988345), (706.1899766899766, 365.0011655011656), (721.8543123543121, 328.4510489510491)]
     right_trapezius = [(742.740093240093, 329.7564102564104), (775.3741258741258, 408.0780885780887), (741.4347319347318, 428.9638694638696), (738.8240093240091, 372.8333333333335), (742.740093240093, 327.14568764568776)]
 
-    body_dict = {'Chest': [left_chest, right_chest],
-                 'Back': [left_top_trapezius, left_low_trapezius, right_top_trapezius, right_low_trapezius,
-                          left_rhomboid, right_rhomboid,
-                          left_teres_major, right_teres_major,
-                          left_lat, right_lat,
-                          left_trapezius, right_trapezius],
-                 'Shoulders':[right_front_deltoid, left_front_deltoid, left_back_deltoid, right_back_deltoid],
-                 'Arms': [right_top_forearm, right_mid_forearm, right_low_forearm, right_left_biceps, right_right_biceps, left_low_forearm, left_mid_forearm, left_top_forearm, left_right_biceps, left_left_biceps],
-                 'Core': [left_top_ab, left_mid_top_ab, left_mid_low_ab, left_low_ab, right_top_ab, right_mid_top_ab, right_mid_low_ab, right_low_ab, 
-                          left_front_oblique, left_back_oblique, right_front_oblique, right_back_oblique],
-                 'Legs': [right_top_low_quad, right_top_top_quad, right_mid_long_quad, right_big_mid_quad, right_low_right_quad, right_low_left_quad, 
-                          left_top_low_quad, left_top_top_quad,  left_mid_long_quad, left_big_mid_quad, left_low_left_quad, left_low_right_quad,
-                          left_left_hamstring, left_left_mid_hamstring,  left_mid_right_hamstring, left_top_top_hamstring, left_right_low_hamstring,
-                          right_right_hamstring, right_right_mid_hamstring, right_top_top_hamstring, right_left_mid_hamstring, right_left_low_hamstring,
-                          left_knee, left_under_knee, right_knee, right_under_knee,
-                          back_left_left_gastricnemius, back_left_right_gastricnemius, back_right_left_gastricnemius, back_right_right_gastricnemius, left_front_right_gastricnemius,left_front_left_gastricnemius, right_front_left_gastricnemius, right_front_right_gastricnemius, left_tibialis_anterior, right_tibialis_anterior]}
-    
-    image_path = r'C:\Users\MikolajPawlak\Documents\GitHub\Public-projects\Hevy workouts\human_body.jpg'
+    body_dict = {
+            'Abdominals': [
+                left_top_ab, left_mid_top_ab, left_mid_low_ab, left_low_ab,
+                right_top_ab, right_mid_top_ab, right_mid_low_ab, right_low_ab
+            ],
+            'Abductors': [],
+            'Adductors': [],
+            'Biceps': [
+                right_left_biceps, right_right_biceps, 
+                left_right_biceps, left_left_biceps
+            ],
+            'Calves': [
+                back_left_left_gastricnemius, back_left_right_gastricnemius, 
+                back_right_left_gastricnemius, back_right_right_gastricnemius, 
+                left_front_right_gastricnemius, left_front_left_gastricnemius, 
+                right_front_left_gastricnemius, right_front_right_gastricnemius, 
+                left_tibialis_anterior, right_tibialis_anterior
+            ],
+            'Cardio': [],
+            'Chest': [left_chest, right_chest],
+            'Forearms': [
+                right_top_forearm, right_mid_forearm, right_low_forearm,
+                left_low_forearm, left_mid_forearm, left_top_forearm
+            ],
+            'Full_body': [],
+            'Glutes': [],
+            'Hamstrings': [
+                left_left_hamstring, left_left_mid_hamstring, left_mid_right_hamstring,
+                left_top_top_hamstring, left_right_low_hamstring,
+                right_right_hamstring, right_right_mid_hamstring, right_top_top_hamstring,
+                right_left_mid_hamstring, right_left_low_hamstring
+            ],
+            'Lats': [left_lat, right_lat],
+            'Lower_back': [],
+            'Other': [],
+            'Quadriceps': [
+                right_top_low_quad, right_top_top_quad, right_mid_long_quad, right_big_mid_quad, 
+                right_low_right_quad, right_low_left_quad, 
+                left_top_low_quad, left_top_top_quad, left_mid_long_quad, 
+                left_big_mid_quad, left_low_left_quad, left_low_right_quad
+            ],
+            'Shoulders': [
+                right_front_deltoid, left_front_deltoid, 
+                left_back_deltoid, right_back_deltoid
+            ],
+            'Traps': [
+                left_top_trapezius, left_low_trapezius, 
+                right_top_trapezius, right_low_trapezius,
+                left_trapezius, right_trapezius
+            ],
+            'Triceps': [],
+            'Upper_back': [
+                left_rhomboid, right_rhomboid,
+                left_teres_major, right_teres_major
+            ]
+        }
+
+    image_path = r'C:\Users\MikolajPawlak\Documents\GitHub\Public-projects\Hevy Workout App Analytics Dashboard\human_body.jpg'
     image = Image.open(image_path)
     draw = ImageDraw.Draw(image)
 
