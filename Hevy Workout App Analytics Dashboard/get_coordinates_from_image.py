@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 from PIL import Image
 
 # Load the image
-image_path = r'C:\Users\MikolajPawlak\Documents\GitHub\Public-projects\Hevy workouts\human_body.jpg'
+image_path = r'C:\Users\MikolajPawlak\Documents\GitHub\Public-projects\Hevy Workout App Analytics Dashboard\human_body.jpg'
 img = Image.open(image_path)
 
 # Display the image

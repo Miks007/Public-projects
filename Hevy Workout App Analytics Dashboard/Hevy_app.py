@@ -95,8 +95,10 @@ if choice == 'Overall':
 
     # Metric 2 - average workout time
     df['time'] = df['end_time'] - df['start_time']
+    df['weight_total_kg'] = df['reps'] * df['weight_kg']
     grouped_workouts = df.groupby(['workout_id', 'time', 'start_time', 'end_time' ,'year']).agg(
-        num_exercises=('excercise_title', 'nunique'),  # Count unique exercises
+        num_exercises=('excercise_title', 'nunique'),
+        weight_total_kg=('weight_total_kg', 'sum') # Sum of weight per workout# Count unique exercises
     ).reset_index()
     grouped_workouts.index +=1
     average_time = grouped_workouts.time.apply(pd.to_timedelta).mean()
@@ -130,11 +132,16 @@ if choice == 'Overall':
         #######################################
 
     # Show line chart
+    # container_chart = st.container(border=True)
+    # container_chart.line_chart(grouped_workouts[['num_exercises', 'start_time' ,'year']], 
+    #             x = 'start_time', y = 'num_exercises', color = 'year', 
+    #             x_label ='Workout_number', y_label ='Number of Exercises')
+    
+        # Show line chart
     container_chart = st.container(border=True)
-    container_chart.line_chart(grouped_workouts[['num_exercises', 'start_time' ,'year']], 
-                x = 'start_time', y = 'num_exercises', color = 'year', 
-                x_label ='Workout_number', y_label ='Number of Exercises')
-
+    container_chart.scatter_chart(grouped_workouts[['num_exercises', 'start_time' ,'year', 'weight_total_kg']], 
+                x = 'start_time', y = 'weight_total_kg', color = 'year', size ='num_exercises',
+                x_label ='Workout_number', y_label ='Total Weight in Kg', height = 500)
 
     # Show dataframe
     st.dataframe(df)
@@ -149,7 +156,7 @@ elif choice == 'Muscle':
     ############### FILTERS ###############
     #######################################
 
-    filters_row = st.columns(3)
+    filters_row = st.columns(4)
     for col in filters_row:
         with col.container(border= True):
             if col == filters_row[0]:
@@ -164,9 +171,14 @@ elif choice == 'Muscle':
             if col == filters_row[1]:
                 # Add a dropbox to choose muslce groups
                 muscle_groups_primary = sorted(df.primary_muscle_group.unique())
-                primary_muscle_groups_choice = st.multiselect("Primary muscle group", muscle_groups_primary, default=None, placeholder="Choose an option", disabled=False, label_visibility="visible")
+                primary_muscle_groups_choice = st.multiselect("Exercise title", sorted(df['excercise_title'].unique().tolist()), default=None, placeholder="Choose an option", disabled=False, label_visibility="visible")
                 
             if col == filters_row[2]:
+                # Add a dropbox to choose muslce groups
+                muscle_groups_primary = sorted(df.primary_muscle_group.unique())
+                primary_muscle_groups_choice = st.multiselect("Primary muscle group", muscle_groups_primary, default=None, placeholder="Choose an option", disabled=False, label_visibility="visible")
+                
+            if col == filters_row[3]:
                 # Add a dropbox to choose muslce groups
                 muscle_groups = sorted(df.primary_muscle_group.unique())
                 muscle_groups_secondary =  [m for m in muscle_groups if m not in primary_muscle_groups_choice]
