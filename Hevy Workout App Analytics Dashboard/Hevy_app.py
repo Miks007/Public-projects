@@ -52,8 +52,8 @@ st.write(""" # Hevy workouts analysis """)
 #######################################
 
 choice = st.radio('Choose analysis option',
-         ['Overall', 'Period comparison', 'Muscle' ],
-         horizontal=True)
+        ['Overall', 'Period comparison', 'Muscle' ],
+        horizontal=True)
 
 if choice == 'Overall':
     #######################################
@@ -169,9 +169,9 @@ elif choice == 'Muscle':
                     format="YYYY-MM-DD"
                 )
             if col == filters_row[1]:
-                # Add a dropbox to choose muslce groups
-                muscle_groups_primary = sorted(df.primary_muscle_group.unique())
-                primary_muscle_groups_choice = st.multiselect("Exercise title", sorted(df['excercise_title'].unique().tolist()), default=None, placeholder="Choose an option", disabled=False, label_visibility="visible")
+                # Add a dropbox to choose exercise (by title)
+                selected_exercises = []
+                selected_exercises = st.multiselect("Exercise title", sorted(df['excercise_title'].unique().tolist()), default=None, placeholder="Choose an option", disabled=False, label_visibility="visible")
                 
             if col == filters_row[2]:
                 # Add a dropbox to choose muslce groups
@@ -187,12 +187,19 @@ elif choice == 'Muscle':
     # Filter the dataframe
     # 1. Date
     df = df[(df['start_time'].dt.date >= selected_date[0])  & (df['end_time'].dt.date <= selected_date[1])]
-    # 2. Muscle, don't filter if:
-    # - if nothing is selected
-    if len(primary_muscle_groups_choice)>0:
+    # 2. Exercise title
+    if selected_exercises:
+        df = df[df['excercise_title'].isin(selected_exercises)]
+    # 3. Muscle, don't filter if:
+    # - if no filter is selected
+    if primary_muscle_groups_choice:
         df = df[(df['primary_muscle_group'].isin(primary_muscle_groups_choice))]
-    if len(secondary_muscle_groups_choice)>0:
+    if secondary_muscle_groups_choice:
         df = df[(df['secondary_muscle_groups'].isin(secondary_muscle_groups_choice))]
+        
+    if selected_exercises and (not primary_muscle_groups_choice) and (not secondary_muscle_groups_choice):
+        primary_muscle_groups_choice = sorted(df.primary_muscle_group.unique())
+        secondary_muscle_groups_choice = pd.unique([item for sublist in df['secondary_muscle_groups'] for item in sublist])
 
     df['primary_muscle_group'] = [[muscle] for muscle in df['primary_muscle_group']]
     
@@ -209,32 +216,19 @@ elif choice == 'Muscle':
     'weight_kg': aggregate_to_list,
     'distance_meters': aggregate_to_list,
     'duration_minutes': aggregate_to_list,
+     #### <--- ADD HERE MAX VOLUME reps * weight_kg 
     }).reset_index()
-
+    
     # Rename columns in a more concise way
-    # grouped['max_reps'] = str(int(max(set(max(grouped["reps"])))))
-    # grouped['max_weight_kg'] = str(int(max(set(max(grouped["weight_kg"])))))
-    # grouped['max_distance_meters'] = str(int(max(set(max(grouped["distance_meters"])))))
-    # grouped['max_duration_minutes'] = str(int(max(set(max(grouped["duration_minutes"])))))
+    grouped['max_reps'] = [max(reps) if reps else '' for reps in grouped['reps']]
+    grouped['max_weight_kg'] = [max(reps) if reps else '' for reps in grouped['weight_kg']]
+    grouped['max_distance_meters'] = [max(reps) if reps else '' for reps in grouped['distance_meters']]
+    grouped['max_duration_minutes'] = [max(reps) if reps else '' for reps in grouped['duration_minutes']]
 
     st.dataframe(
-    grouped,
-    column_config={
-        "excercise_title": "excercise_title",
-        "max_reps": "max_reps",
-        "reps": st.column_config.BarChartColumn("reps"),
-        
-        "weight_kg": st.column_config.BarChartColumn("weight_kg"),
-        "max_weight_kg": "max_weight_kg",
-        "distance_meters": st.column_config.BarChartColumn("distance_meters"),
-        "max_weight_kg": "max_weight_kg",
-        "duration_minutes": st.column_config.BarChartColumn("duration_minutes"),
-        "max_duration_minutes": "max_duration_minutes",
-        
-    })
+    grouped[['excercise_title', 'max_reps', 'max_weight_kg', 'max_distance_meters','max_duration_minutes']])
 
-#
- # "max_weight_kg": str(set(max(grouped["max_weight_kg"]))),
+
     # Show image
     image = paint(primary_muscle_groups_choice, secondary_muscle_groups_choice)
     new_size = (int(image.width // 2.5), int(image.height // 2.5))
