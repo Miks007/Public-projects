@@ -12,6 +12,7 @@ import ast
 
 from find_recent_workout_file import find_recent_workout_file
 from human_body_painting import paint
+from run_another_python_script import run_sub_script_with_progress
 
 
 def aggregate_to_list(series):
@@ -44,22 +45,38 @@ min_date = df['start_time'].min().date()
 max_date = df['end_time'].max().date()
 
 st.set_page_config(layout="wide")
-st.write(""" # Hevy workouts analysis """)
+st.title(":red-background[Hevy workouts analysis] ")
 
 
 #######################################
 ############### CHOISES ###############
 #######################################
 
-choice = st.radio('Choose analysis option',
-        ['Overall', 'Period comparison', 'Muscle' ],
+choice = st.radio('Choose option',
+        ['Get your data','Overall analysis', 'Muscle group analysis'],
         horizontal=True)
 
-if choice == 'Overall':
+if choice == 'Get your data':
+    
+    # Ask user for api_key
+    st.write(":orange-background[Provide your *API_KEY* for Hevy workouts and click *Download data* button]")
+    HEVY_API_KEY = st.text_input("API_KEY")
+    api_ready_button = st.button("Download data")
+    if HEVY_API_KEY and api_ready_button:
+        st.write(":red[Please don't leave this page]. Data download process started...")
+        
+        # Run the  script with the argument
+        command = f'python Hevy_API_workouts_app.py --HEVY_API_KEY {HEVY_API_KEY}'
+        run_sub_script_with_progress(command)
+    else:
+        st.write("Goodbye")
+
+
+elif choice == 'Overall analysis':
     #######################################
     ############### FILTERS ###############
     #######################################
-    filters_row = st.columns(2)
+    filters_row = st.columns(3)
     for col in filters_row:
         with col.container(border= True):
             if col == filters_row[0]:
@@ -73,17 +90,28 @@ if choice == 'Overall':
                 )
             if col == filters_row[1]:
                 # Add a dropbox to choose muslce groups
-                muscle_groups = ['Back', 'Chest', 'Core', 'Shoulders', 'Arms', 'Legs']
-                muscle_groups_choice = eval(str(st.multiselect("Muscle group", muscle_groups, default=None, placeholder="Choose an option", disabled=False, label_visibility="visible")))
-    
+                muscle_groups_primary = sorted(df.primary_muscle_group.unique())
+                primary_muscle_groups_choice = st.multiselect("Primary muscle group", muscle_groups_primary, default=None, placeholder="Choose an option", disabled=False, label_visibility="visible")
+                
+            if col == filters_row[2]:
+                # Add a dropbox to choose muslce groups
+                muscle_groups = sorted(df.primary_muscle_group.unique())
+                muscle_groups_secondary =  [m for m in muscle_groups if m not in primary_muscle_groups_choice]
+                secondary_muscle_groups_choice = st.multiselect("Secondary muscle group", muscle_groups_secondary, default=None, placeholder="Choose an option", disabled=False, label_visibility="visible")
+                
     # Filter the dataframe
     # 1. Date
     df = df[(df['start_time'].dt.date >= selected_date[0])  & (df['end_time'].dt.date <= selected_date[1])]
     # 2. Muscle, don't filter if:
     # - if nothing is selected
-    if len(muscle_groups_choice)>0:
-        df = df[(df['primary_muscle_group'].isin(muscle_groups_choice)) | (df['secondary_muscle_group'].isin(muscle_groups_choice))]
-
+    if primary_muscle_groups_choice:
+        df = df[(df['primary_muscle_group'].isin(primary_muscle_groups_choice))]
+    if secondary_muscle_groups_choice:
+        df = df[(df['secondary_muscle_groups'].isin(secondary_muscle_groups_choice))]
+        
+    if (not primary_muscle_groups_choice) and (not secondary_muscle_groups_choice):
+        primary_muscle_groups_choice = sorted(df.primary_muscle_group.unique())
+        secondary_muscle_groups_choice = pd.unique([item for sublist in df['secondary_muscle_groups'] for item in sublist])
 
     #######################################
     ############### METRICS ###############
@@ -150,7 +178,7 @@ if choice == 'Overall':
 
     
 
-elif choice == 'Muscle':
+elif choice == 'Muscle group analysis':
 
     #######################################
     ############### FILTERS ###############

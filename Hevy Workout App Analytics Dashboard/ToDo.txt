@@ -1,3 +1,6 @@
+🌟🌟🌟 Get your data:
+add log reading in run_another_python_script.py so it could be streamed to app
+
 🌟 Muscle tab:
 - modify line chart:
     - add max volume 
@@ -12,6 +15,7 @@
 
 🌟 decode_templates.py
 - integrate with Hevy.app
+
 
 🌟 ALL TABS:
 - experiment with highlighting rows in dataframes
