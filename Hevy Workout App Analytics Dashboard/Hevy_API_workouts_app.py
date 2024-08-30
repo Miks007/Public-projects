@@ -1,28 +1,37 @@
 import requests
-import configparser
+import argparse
 import pandas as pd
 import math
 import logging
 from datetime import datetime
 import os
+import tqdm
+import sys
 
-def load_config():
-    try:
-        # Define credentials
-        config = configparser.ConfigParser()
-        config.read('config.ini')
-        # Get Hevy API key
-        HEAVY_API_KEY = config['Hevy']['API_KEY']
-        return HEAVY_API_KEY
-    except Exception as e:
-        logging.error(f"Error: Error during reading config.ini file \n {str(e)}")
+def setup_logging():
+    global log_file, log_dir, bot_result
+    bot_result = {}
+    # Create a 'logs' directory
+    log_dir = os.path.join(os.getcwd(), 'logs', datetime.now().strftime('%Y-%m-%d'))
+    os.makedirs(log_dir, exist_ok=True)
 
-def get_workout_count(HEAVY_API_KEY):
+    # Configure the logging module
+    log_file = os.path.join(log_dir, f'Hevy_{datetime.now().strftime("%d%m%Y_%H%M%S")}.log')
+    logging.basicConfig(
+        level=logging.INFO,
+        format='\n%(asctime)s [%(levelname)s] %(message)s',
+        handlers=[
+            logging.FileHandler(log_file),
+            logging.StreamHandler(),
+        ]
+    )
+
+def get_workout_count(HEVY_API_KEY):
     try:
         url = f'https://api.hevyapp.com/v1/workouts/count'
         headers = {
             'accept': 'application/json',
-            'api-key': HEAVY_API_KEY
+            'api-key': HEVY_API_KEY
         }
 
         response = requests.get(url, headers=headers)
@@ -32,21 +41,23 @@ def get_workout_count(HEAVY_API_KEY):
             print('Workout count:', data['workout_count'])
             logging.info(f'Workout count: {data["workout_count"]}')
             return int(data['workout_count'])
+        elif response.status_code == 401:
+            logging.error(f"Failed to retrieve data. Unauthorized access: {response.status_code}")
         else:
             logging.error(f"Failed to retrieve data: {response.status_code}")
     except Exception as e:
         logging.error(f"Error: Error during get_workout_count() \n {str(e)}")
 
 
-def get_workouts(HEAVY_API_KEY, page = int, pageSize = int):
+def get_workouts(HEVY_API_KEY, page = int, pageSize = int):
     ''' 
     Fetches workout data from the Hevy API and organizes it into DataFrames.
 
     Parameters:
     - page (int): The page number to start fetching workouts from (1-indexed).
-                   Must be an integer greater than  1.
+        Must be an integer greater than  1.
     - pageSize (int): The number of workouts to fetch per page.
-                      Must be an integer in the range [1, 10] and greater than 'page'.
+        Must be an integer in the range [1, 10] and greater than 'page'.
 
     Returns:
     - df_workouts (pd.DataFrame): A DataFrame containing distinct workout details.
@@ -65,7 +76,7 @@ def get_workouts(HEAVY_API_KEY, page = int, pageSize = int):
         url = f'https://api.hevyapp.com/v1/workouts?page={page}&pageSize={pageSize}&since=1970-01-01T00%3A00%3A00Z'
         headers = {
             'accept': 'application/json',
-            'api-key': HEAVY_API_KEY
+            'api-key': HEVY_API_KEY
         }
 
         response = requests.get(url, headers=headers)
@@ -147,23 +158,28 @@ def get_workouts(HEAVY_API_KEY, page = int, pageSize = int):
     except Exception as e:
         logging.error(f"Error: Error during workouts fetch \n {str(e)}")
 
-def setup_logging():
-    global log_file, log_dir, bot_result
-    bot_result = {}
-    # Create a 'logs' directory
-    log_dir = os.path.join(os.getcwd(), 'logs', datetime.now().strftime('%Y-%m-%d'))
-    os.makedirs(log_dir, exist_ok=True)
+def get_templates(HEVY_API_KEY, df):
+    try:
+        df_decoded_templates = pd.DataFrame()
+        data_list = []
+        logging.info(f'Found {len(df.exercise_template_id.unique())} unique templates to decode. Starting to decode ...')
+        for template_id in tqdm.tqdm(df.exercise_template_id.unique()):
+            url = f'https://api.hevyapp.com/v1/exercise_templates/{template_id}'
+            headers = {
+                'accept': 'application/json',
+                'api-key': HEVY_API_KEY
+            }
 
-    # Configure the logging module
-    log_file = os.path.join(log_dir, f'Heavy_{datetime.now().strftime("%d%m%Y_%H%M%S")}.log')
-    logging.basicConfig(
-        level=logging.INFO,
-        format='\n%(asctime)s [%(levelname)s] %(message)s',
-        handlers=[
-            logging.FileHandler(log_file),
-            logging.StreamHandler(),
-        ]
-    )
+            response = requests.get(url, headers=headers)
+            if response.status_code == 200:
+                data = response.json()
+                data_list.append(data)
+                df_decoded_templates = pd.DataFrame(data_list)
+        logging.info(f"All templates decoded.")
+        df_full = df.merge(df_decoded_templates, how = 'left', left_on= 'exercise_template_id', right_on='id')
+        return df_full
+    except Exception as e:
+        logging.error(f"Error: Error during reading config.ini file \n {str(e)}")
 
 # Define the main function
 def main():
@@ -171,11 +187,17 @@ def main():
         # Start logging
         os.chdir(os.path.dirname(os.path.realpath(__file__)))
         setup_logging()
-        # Load credentials
-        HEAVY_API_KEY = load_config()
-
+        # Get HEVY_API_KEY from arguments
+        parser = argparse.ArgumentParser(description='Script that uses HEVY_API_KEY')
+        parser.add_argument('--HEVY_API_KEY', required=True, help='API key for HEVY')
+        args = parser.parse_args()
+        HEVY_API_KEY = args.HEVY_API_KEY
+        
+        logging.error(f"API KEY: ", HEVY_API_KEY)
+        
+        
         # Get count of workouts
-        workout_count = get_workout_count(HEAVY_API_KEY)
+        workout_count = get_workout_count(HEVY_API_KEY)
 
         # Define empty variables
         df_workouts = pd.DataFrame()
@@ -183,9 +205,10 @@ def main():
         df_sets = pd.DataFrame()
 
         # Get all workouts based on workcout_count
+        logging.info(f'Fetching workouts from {math.ceil(workout_count/10)} pages.')
         for page in range(math.ceil(workout_count/10)):
             page = page + 1 
-            df_workouts_temp, df_exercises_temp, df_sets_temp = get_workouts(HEAVY_API_KEY,page,10)
+            df_workouts_temp, df_exercises_temp, df_sets_temp = get_workouts(HEVY_API_KEY,page,10)
 
             df_workouts = pd.concat([df_workouts, df_workouts_temp], ignore_index=True)
             df_exercises = pd.concat([df_exercises, df_exercises_temp], ignore_index=True)
@@ -194,16 +217,19 @@ def main():
         logging.info(f'Fetch done. Total workouts got: {str(len(df_workouts))}')
 
         # Merge all dataframes
-        df_full = pd.merge(df_workouts, df_exercises, how = 'left', on= 'workout_id')
-        df_full = pd.merge(df_full, df_sets, how = 'left', on= ['workout_id', 'exercise_index'])
+        df_merged = pd.merge(df_workouts, df_exercises, how = 'left', on= 'workout_id')
+        df_merged = pd.merge(df_merged, df_sets, how = 'left', on= ['workout_id', 'exercise_index'])
         
         # Adjust column names
-        df_full.rename(columns={'title_x': 'workout_title', 'title_y': 'excercise_title'}, inplace= True)
-        
+        df_merged.rename(columns={'title_x': 'workout_title', 'title_y': 'excercise_title'}, inplace= True)
+
+        # Decode templates 
+        df_full = get_templates(HEVY_API_KEY, df_merged)
+
         # Save data to a csv file
         file_name = 'hevy_workouts_' + datetime.now().strftime('%Y_%m_%d') + '.csv'
         df_full.to_csv(file_name)
-        logging.info(f'Data saved to: {file_name})')
+        logging.info(f'Workouts data saved to: {file_name})')
     except Exception as e:
         logging.error(f'Error in main: {str(e)}')
 

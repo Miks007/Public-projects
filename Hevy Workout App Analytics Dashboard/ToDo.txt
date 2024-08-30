@@ -1,0 +1,21 @@
+🌟🌟🌟 Get your data:
+add log reading in run_another_python_script.py so it could be streamed to app
+
+🌟 Muscle tab:
+- modify line chart:
+    - add max volume 
+    - check if bar chart doest work better than the line 
+
+- add exercise selectbox  
+- add exercise with reps preview
+- finish body paiting coordinates 
+- add personal records
+- add KPI - if you choose an exercise show reps, weight and volume (show the change - if it raised or fell)
+
+
+🌟 decode_templates.py
+- integrate with Hevy.app
+
+
+🌟 ALL TABS:
+- experiment with highlighting rows in dataframes
