@@ -1,7 +1,10 @@
-🌟🌟🌟 Get your data:
-add log reading in run_another_python_script.py so it could be streamed to app
+🌟 Get your data:
+-comment code
+- adjust logs text 
 
 🌟 Muscle tab:
+- Add radar chart for: core, legs, arms, back, chest+shoulders? 
+
 - modify line chart:
     - add max volume 
     - check if bar chart doest work better than the line 
