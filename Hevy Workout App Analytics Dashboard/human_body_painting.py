@@ -1,6 +1,6 @@
-import os 
 def paint(primary, secondary):
     from PIL import Image, ImageDraw
+    import os 
     # Coordinates for the polygon
     ### CHEST
     # pectorialis major
