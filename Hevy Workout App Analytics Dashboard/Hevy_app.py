@@ -5,13 +5,18 @@ import pandas as pd
 import os
 import io
 from PIL import Image, ImageDraw
-import datetime
+
+from datetime import datetime
+from dateutil.relativedelta import relativedelta
+import pytz
+
 import matplotlib.pyplot as plt
 import ast
 
 
 from find_recent_workout_file import find_recent_workout_file
 from human_body_painting import paint
+from run_another_python_script import find_latest_log_file
 from run_another_python_script import run_sub_script_with_progress
 
 
@@ -19,8 +24,9 @@ def aggregate_to_list(series):
         # Filter out NaN values and convert to list
         return series.dropna().tolist()
 
-# Specify the path to the directory you want to set as the working directory
-app_directory = r'C:\Users\MikolajPawlak\Documents\GitHub\Public-projects\Hevy Workout App Analytics Dashboard'
+
+# Specify the path to the directory of the script
+app_directory = os.path.dirname(os.path.abspath(__file__))
 
 # Change the current working directory to the specified directory
 os.chdir(app_directory)
@@ -45,7 +51,9 @@ min_date = df['start_time'].min().date()
 max_date = df['end_time'].max().date()
 
 st.set_page_config(layout="wide")
-st.title(":red-background[Hevy workouts analysis] ")
+st.title(":red[Hevy workouts analysis] ")
+
+
 
 
 #######################################
@@ -56,21 +64,28 @@ choice = st.radio('Choose option',
         ['Get your data','Overall analysis', 'Muscle group analysis'],
         horizontal=True)
 
+
+##############################################################################
+# Get your data Tab 
+##############################################################################
 if choice == 'Get your data':
     
     # Ask user for api_key
-    st.write(":orange-background[Provide your *API_KEY* for Hevy workouts and click *Download data* button]")
+    st.write("Provide your :orange[*API_KEY*] for Hevy workouts and click :orange[*Download data*] button")
     HEVY_API_KEY = st.text_input("API_KEY")
     api_ready_button = st.button("Download data")
     if HEVY_API_KEY and api_ready_button:
         st.write(":red[Please don't leave this page]. Data download process started...")
         
-        # Run the  script with the argument
+        # Run the script with the argument and print logs
         command = f'python Hevy_API_workouts_app.py --HEVY_API_KEY {HEVY_API_KEY}'
         run_sub_script_with_progress(command)
-    else:
-        st.write("Goodbye")
-
+        st.write(":green[Data has been dowloaded and decoded. Analysis tabs are ready do explore!]")
+        
+        
+##############################################################################
+# Overall analysis Tab 
+##############################################################################
 
 elif choice == 'Overall analysis':
     #######################################
@@ -116,12 +131,16 @@ elif choice == 'Overall analysis':
     #######################################
     ############### METRICS ###############
     #######################################
+    one_month_ago_utc = datetime.now(pytz.utc) - relativedelta(months=1)
 
-
-    # Metric 1 - number of workouts
+    ##### Metric 1 - number of workouts
+    # Delta 1 - diffrence workouts number in last month
     num_of_workouts = len(df['workout_id'].unique())
-
-    # Metric 2 - average workout time
+    delta_1 = len(df['workout_id'][df['start_time'] >= one_month_ago_utc].unique())
+    delta_1 = str(delta_1) + ' in last month'
+    
+    ##### Metric 2 - average workout time
+    # Delta 2 - diffrence workout time vs last month
     df['time'] = df['end_time'] - df['start_time']
     df['weight_total_kg'] = df['reps'] * df['weight_kg']
     grouped_workouts = df.groupby(['workout_id', 'time', 'start_time', 'end_time' ,'year']).agg(
@@ -129,30 +148,61 @@ elif choice == 'Overall analysis':
         weight_total_kg=('weight_total_kg', 'sum') # Sum of weight per workout# Count unique exercises
     ).reset_index()
     grouped_workouts.index +=1
+    # calculate average times and format them
     average_time = grouped_workouts.time.apply(pd.to_timedelta).mean()
     average_time_formatted = str(average_time).split()[-1].split('.')[0]
-
-    # Metric 3 - average number of exercises per workout
+    average_time_this_month = grouped_workouts[grouped_workouts['start_time'] >= one_month_ago_utc]['time'].apply(pd.to_timedelta).mean()
+    average_time_this_month_formatted = str(average_time_this_month).split()[-1].split('.')[0]
+    
+    # Find out the delta (average time vs average time last month)
+    time_format = "%H:%M:%S"
+    if average_time >= average_time_this_month:
+        delta_2 = datetime.strptime(average_time_formatted, time_format) - datetime.strptime(average_time_this_month_formatted, time_format)
+        sign = '-'
+    else:
+        delta_2 = datetime.strptime(average_time_this_month_formatted, time_format) - datetime.strptime(average_time_formatted, time_format)
+        sign = '+'
+    
+    # Convert timedelta to total seconds
+    total_seconds = int(delta_2.total_seconds())
+    hours = total_seconds // 3600
+    minutes = (total_seconds % 3600) // 60
+    seconds = total_seconds % 60   
+    # Format the delta_2 output
+    delta_2 = f"{sign}{hours:02}:{minutes:02}:{seconds:02} in last month"
+    
+    ###### Metric 3 - average number of exercises per workout
+    # delta_3  - average number of exercises per workout last month
     average_exercises = round(grouped_workouts['num_exercises'].mean(),2)
-
-    # Metric 4 - average number of sets per exercise
+    average_exercises_last_month = round(grouped_workouts['num_exercises'][grouped_workouts['start_time'] >= one_month_ago_utc].mean(),2)
+    delta_3 = f"{round(average_exercises_last_month - average_exercises, 2)} in last month"
+    
+    ###### Metric 4 - average number of sets per exercise
+    # delta_4 - average number of sets per exercise last month
     grouped_exercises = df.groupby(['workout_id','excercise_title']).agg(
         num_of_sets=('set_index', 'count')  # Average sets per workout
     ).reset_index()
+    grouped_exercises_last_month = df[df['start_time'] >= one_month_ago_utc].groupby(['workout_id','excercise_title']).agg(
+        num_of_sets=('set_index', 'count')  # Average sets per workout
+    ).reset_index()
     average_sets = round(grouped_exercises['num_of_sets'].mean(),2)
+    average_sets_last_month = round(grouped_exercises_last_month['num_of_sets'].mean(),2)
+    delta_4 = f"{round(average_sets_last_month - average_sets,2)} in the last month"
 
+
+    ###### Display metrics and their deltas 
     metric_row = st.columns(4)
 
     for col in metric_row:
         with col.container(border= True):
             if col == metric_row[0]:
-                st.metric("Workouts", num_of_workouts, delta=None, delta_color="normal", help=None, label_visibility="visible")
+                st.metric("Workouts", num_of_workouts, delta=delta_1, delta_color="normal", help=None, label_visibility="visible")
             elif col == metric_row[1]:
-                st.metric("Average Workout Time", average_time_formatted, delta=None, delta_color="normal", help=None, label_visibility="visible")
+                st.metric("Average Workout Time", average_time_formatted, delta=delta_2, delta_color="normal", help=None, label_visibility="visible")
             elif col == metric_row[2]:
-                st.metric("Average Number Of Exercises Per Workout", average_exercises, delta=None, delta_color="normal", help=None, label_visibility="visible")
+                st.metric("Average Number Of Exercises Per Workout", average_exercises, delta=delta_3, delta_color="normal", help=None, label_visibility="visible")
             elif col == metric_row[3]:
-                st.metric("Average Number Of Sets Per Exercise", average_sets, delta=None, delta_color="normal", help=None, label_visibility="visible")
+                st.metric("Average Number Of Sets Per Exercise", average_sets, delta=delta_4, delta_color="normal", help=None, label_visibility="visible")
         
         
         #######################################
@@ -176,7 +226,10 @@ elif choice == 'Overall analysis':
     # workout time
     # load 
 
-    
+##############################################################################
+# Muscle group analysis Tab 
+##############################################################################
+
 
 elif choice == 'Muscle group analysis':
 
