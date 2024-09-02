@@ -5,7 +5,7 @@ This space hosts a variety of personal projects that I have worked on for **skil
 Below you'll find information about the most recent projects and their purposes.
 
 ### 1. Hevy Workout App Analytics Dashboard 🏋️‍♂️
-● **Description:** This project downloads data from your Hevy workouts, transforms it, and displays it on an analytics dashboard. It provides a detailed overview of your workout history and progress, making it easy to inspect your performance and improvements over time.
+● **Description:** This project downloads workout data from your Hevy app, transforms it, and displays it on an analytics dashboard. It provides a detailed overview of your workout history and progress, making it easy to inspect your performance and improvements over time.
 
 ● **Purpose:** To create a user-friendly dashboard for tracking and analyzing workout data for better fitness insights, while also experimenting with Streamlit app creation.
 
