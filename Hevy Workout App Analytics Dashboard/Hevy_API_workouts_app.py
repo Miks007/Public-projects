@@ -162,19 +162,24 @@ def get_templates(HEVY_API_KEY, df):
     try:
         df_decoded_templates = pd.DataFrame()
         data_list = []
-        logging.info(f'Found {len(df.exercise_template_id.unique())} unique templates to decode. Starting to decode ...')
-        for template_id in tqdm.tqdm(df.exercise_template_id.unique()):
+        templates_total = len(df.exercise_template_id.unique())
+        logging.info(f'Found {templates_total} unique templates to decode. Starting to decode ...')
+        cntr = 0
+        for template_id in df.exercise_template_id.unique():
+            cntr += 1 
             url = f'https://api.hevyapp.com/v1/exercise_templates/{template_id}'
             headers = {
                 'accept': 'application/json',
                 'api-key': HEVY_API_KEY
             }
-
+            
             response = requests.get(url, headers=headers)
             if response.status_code == 200:
                 data = response.json()
                 data_list.append(data)
                 df_decoded_templates = pd.DataFrame(data_list)
+            if cntr % 25 == 0 or cntr == templates_total:
+                logging.info(f"Decoded templates {cntr}/{templates_total}.")
         logging.info(f"All templates decoded.")
         df_full = df.merge(df_decoded_templates, how = 'left', left_on= 'exercise_template_id', right_on='id')
         return df_full
@@ -205,7 +210,7 @@ def main():
         df_sets = pd.DataFrame()
 
         # Get all workouts based on workcout_count
-        logging.info(f'Fetching workouts from {math.ceil(workout_count/10)} pages.')
+        logging.info(f'Workout pages count: {math.ceil(workout_count/10)}.')
         for page in range(math.ceil(workout_count/10)):
             page = page + 1 
             df_workouts_temp, df_exercises_temp, df_sets_temp = get_workouts(HEVY_API_KEY,page,10)

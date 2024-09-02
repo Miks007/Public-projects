@@ -44,37 +44,41 @@ choice = st.radio('Choose option',
         horizontal=True)
 
 default_file = find_recent_workout_file(app_directory)
+try:
+    # read data and prepare it for the app
+    df = pd.read_csv(default_file, index_col=0)
+    df['start_time'] = pd.to_datetime(df['start_time'])
+    df['end_time'] = pd.to_datetime(df['end_time'])
+    df['year'] = df['start_time'].dt.year.astype(str)
+    df['month'] = df['start_time'].dt.month
+    df['duration_seconds'] = df['duration_seconds']/60
+    # Capitalize muscle names
+    df['primary_muscle_group'] = [muscle_name.capitalize() for muscle_name in df['primary_muscle_group']]
+    df['secondary_muscle_groups'] = [[item.capitalize() for item in ast.literal_eval(lst)] for lst in df['secondary_muscle_groups']]    
+    df.rename(columns={'duration_seconds': 'duration_minutes'}, inplace= True)
+    min_date = df['start_time'].min().date()
+    max_date = df['end_time'].max().date()
+except:
+    pass
 ##############################################################################
 # Get your data Tab 
 ##############################################################################
 if choice == 'Get your data':
+    with st.container(border= True):   
+        # Ask user for api_key
+        st.write("Provide your :orange[*API_KEY*] for Hevy workouts and click :orange[*Download data*] button")
+        HEVY_API_KEY = st.text_input("API_KEY")
+        api_ready_button = st.button("Download data")
+        if HEVY_API_KEY and api_ready_button:
+            st.write(":red[Please don't leave this page]. Data download process started...")
+            
+            # Run the script with the argument and print logs
+            command = f'python Hevy_API_workouts_app.py --HEVY_API_KEY {HEVY_API_KEY}'
+            run_sub_script_with_progress(command)
+            st.write(":green[Data has been dowloaded and decoded. Analysis tabs are ready do explore!]")
+            st.success("Done!")
+            default_file = find_recent_workout_file(app_directory)
 
-    # Ask user for api_key
-    st.write("Provide your :orange[*API_KEY*] for Hevy workouts and click :orange[*Download data*] button")
-    HEVY_API_KEY = st.text_input("API_KEY")
-    api_ready_button = st.button("Download data")
-    if HEVY_API_KEY and api_ready_button:
-        st.write(":red[Please don't leave this page]. Data download process started...")
-        
-        # Run the script with the argument and print logs
-        command = f'python Hevy_API_workouts_app.py --HEVY_API_KEY {HEVY_API_KEY}'
-        run_sub_script_with_progress(command)
-        st.write(":green[Data has been dowloaded and decoded. Analysis tabs are ready do explore!]")
-        
-        default_file = find_recent_workout_file(app_directory)
-        # read data and prepare it for the app
-        df = pd.read_csv(default_file, index_col=0)
-        df['start_time'] = pd.to_datetime(df['start_time'])
-        df['end_time'] = pd.to_datetime(df['end_time'])
-        df['year'] = df['start_time'].dt.year.astype(str)
-        df['month'] = df['start_time'].dt.month
-        df['duration_seconds'] = df['duration_seconds']/60
-        # Capitalize muscle names
-        df['primary_muscle_group'] = [muscle_name.capitalize() for muscle_name in df['primary_muscle_group']]
-        df['secondary_muscle_groups'] = [[item.capitalize() for item in ast.literal_eval(lst)] for lst in df['secondary_muscle_groups']]    
-        df.rename(columns={'duration_seconds': 'duration_minutes'}, inplace= True)
-        min_date = df['start_time'].min().date()
-        max_date = df['end_time'].max().date()
 ##############################################################################
 # Overall analysis Tab 
 ##############################################################################

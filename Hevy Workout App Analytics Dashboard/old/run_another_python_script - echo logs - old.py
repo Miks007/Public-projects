@@ -44,28 +44,16 @@ def run_sub_script_with_progress(command):
         with open(log_file_path, 'r') as log_file:
 
             for line in log_file:
-                #st.write(line, end='')  # Print each line without adding extra newlines
-                if 'Workout pages count:' in line:
-                    total_pages = int(line.split('Workout pages count:')[1].split('.')[0])
-                    page = 0
-                    download_progress_bar = st.progress(page, text = 'Downloading the data...')
-                    decode_progress_bar = st.progress(0, text = 'Decoding the templates...')
-            try:
+                st.write(line, end='')  # Print each line without adding extra newlines
                 
-                    # Continuously read new lines from the log file
-                    while process.poll() is None:  # While script B is running
-                        line = log_file.readline()
-                        if line:
-                            #st.write(line, end='')  # Print each line without adding extra newlines
-                            if 'Fetching workouts from page: ' in line:
-                                page = int(line.split('Fetching workouts from page: ')[1].split(' (pageSize:10)')[0])
-                                download_progress_bar.progress(page/total_pages, text = f'Downloading the data... {page}/{total_pages}')
-                            if 'Decoded templates ' in line:
-                                templates_decoded = int(line.split('Decoded templates ')[1].split('/')[0])
-                                templates_total = int(line.split('Decoded templates ')[1].split('/')[1].split('.')[0])
-                                decode_progress_bar.progress(templates_decoded/templates_total, text = f'Decoding templates... {templates_decoded}/{templates_total}')
-                        else:
-                            time.sleep(0.1)  # Wait a bit before trying to read again
+            try:
+                # Continuously read new lines from the log file
+                while process.poll() is None:  # While script B is running
+                    line = log_file.readline()
+                    if line:
+                        st.write(line, end='')  # Print each line without adding extra newlines
+                    else:
+                        time.sleep(0.1)  # Wait a bit before trying to read again
             except KeyboardInterrupt:
                 # If the user interrupts, terminate the process
                 process.terminate()
