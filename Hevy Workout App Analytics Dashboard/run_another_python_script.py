@@ -42,7 +42,6 @@ def run_sub_script_with_progress(command):
 
         # Open the log file in read mode
         with open(log_file_path, 'r') as log_file:
-
             for line in log_file:
                 #st.write(line, end='')  # Print each line without adding extra newlines
                 if 'Workout pages count:' in line:
@@ -51,7 +50,6 @@ def run_sub_script_with_progress(command):
                     download_progress_bar = st.progress(page, text = 'Downloading the data...')
                     decode_progress_bar = st.progress(0, text = 'Decoding the templates...')
             try:
-                
                     # Continuously read new lines from the log file
                     while process.poll() is None:  # While script B is running
                         line = log_file.readline()

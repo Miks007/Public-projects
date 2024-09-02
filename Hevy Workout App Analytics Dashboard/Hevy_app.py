@@ -342,7 +342,6 @@ elif choice == 'Muscle group analysis':
                 )
             ), 
         )
-
         # Plotting the radar chart
         col2.plotly_chart(fig)
         
