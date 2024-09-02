@@ -4,6 +4,8 @@
 
 🌟 Muscle tab:
 - Add radar chart for: core, legs, arms, back, chest+shoulders? 
+https://docs.streamlit.io/develop/api-reference/charts/st.plotly_chart
+https://plotly.com/python/radar-chart/
 
 - modify line chart:
     - add max volume 

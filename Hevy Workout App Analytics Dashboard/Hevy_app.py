@@ -5,13 +5,15 @@ import pandas as pd
 import os
 import io
 from PIL import Image, ImageDraw
+import ast
 
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
 import pytz
 
 import matplotlib.pyplot as plt
-import ast
+import plotly.express as px
+
 
 
 from find_recent_workout_file import find_recent_workout_file
@@ -134,10 +136,10 @@ elif choice == 'Overall analysis':
     one_month_ago_utc = datetime.now(pytz.utc) - relativedelta(months=1)
 
     ##### Metric 1 - number of workouts
-    # Delta 1 - diffrence workouts number in last month
+    # Delta 1 - diffrence workouts number in the last month
     num_of_workouts = len(df['workout_id'].unique())
     delta_1 = len(df['workout_id'][df['start_time'] >= one_month_ago_utc].unique())
-    delta_1 = str(delta_1) + ' in last month'
+    delta_1 = str(delta_1) + ' in the last month'
     
     ##### Metric 2 - average workout time
     # Delta 2 - diffrence workout time vs last month
@@ -169,13 +171,13 @@ elif choice == 'Overall analysis':
     minutes = (total_seconds % 3600) // 60
     seconds = total_seconds % 60   
     # Format the delta_2 output
-    delta_2 = f"{sign}{hours:02}:{minutes:02}:{seconds:02} in last month"
+    delta_2 = f"{sign}{hours:02}:{minutes:02}:{seconds:02} in the last month"
     
     ###### Metric 3 - average number of exercises per workout
     # delta_3  - average number of exercises per workout last month
     average_exercises = round(grouped_workouts['num_exercises'].mean(),2)
     average_exercises_last_month = round(grouped_workouts['num_exercises'][grouped_workouts['start_time'] >= one_month_ago_utc].mean(),2)
-    delta_3 = f"{round(average_exercises_last_month - average_exercises, 2)} in last month"
+    delta_3 = f"{round(average_exercises_last_month - average_exercises, 2)} in the last month"
     
     ###### Metric 4 - average number of sets per exercise
     # delta_4 - average number of sets per exercise last month
@@ -236,7 +238,6 @@ elif choice == 'Muscle group analysis':
     #######################################
     ############### FILTERS ###############
     #######################################
-
     filters_row = st.columns(4)
     for col in filters_row:
         with col.container(border= True):
@@ -281,16 +282,13 @@ elif choice == 'Muscle group analysis':
     if selected_exercises and (not primary_muscle_groups_choice) and (not secondary_muscle_groups_choice):
         primary_muscle_groups_choice = sorted(df.primary_muscle_group.unique())
         secondary_muscle_groups_choice = pd.unique([item for sublist in df['secondary_muscle_groups'] for item in sublist])
-
     df['primary_muscle_group'] = [[muscle] for muscle in df['primary_muscle_group']]
     
     #col1, col2 = st.columns([2.55,1])
     col1, col2 = st.columns([2.75,1])
     col1.dataframe(df[['workout_title', 'excercise_title', 'primary_muscle_group', 'secondary_muscle_groups', 'weight_kg', 'reps', 'distance_meters', 'duration_minutes', 'is_custom']])
     
-
     df_temp = df[['workout_id', 'workout_title', 'excercise_title', 'primary_muscle_group', 'secondary_muscle_groups', 'weight_kg', 'reps', 'distance_meters', 'duration_minutes']]
-
     # Group by 'excercise_title' and aggregate using the custom function
     grouped = df.groupby('excercise_title').agg({
     'reps': aggregate_to_list,
@@ -306,7 +304,7 @@ elif choice == 'Muscle group analysis':
     grouped['max_distance_meters'] = [max(reps) if reps else '' for reps in grouped['distance_meters']]
     grouped['max_duration_minutes'] = [max(reps) if reps else '' for reps in grouped['duration_minutes']]
 
-    st.dataframe(
+    col1.dataframe(
     grouped[['excercise_title', 'max_reps', 'max_weight_kg', 'max_distance_meters','max_duration_minutes']])
 
 
@@ -320,3 +318,32 @@ elif choice == 'Muscle group analysis':
 
     # Display the image in Streamlit
     col2.image(image_bytes, caption='Workout', use_column_width=False)
+    
+    df_radar = pd.DataFrame(dict(
+        r=[5, 5, 2, 5, 3],
+        theta=['core','legs','arms',
+            'back', 'chest']))
+    fig = px.line_polar(df_radar, r='r', theta='theta', line_close=True)
+    fig.update_traces(fill='toself')
+    # Update layout for transparent background
+    fig.update_layout(
+        paper_bgcolor='rgba(0,0,0,0)',  # Transparent background for the entire figure area
+        plot_bgcolor='rgba(0,0,0,0)',   # Transparent background for the plotting area
+        font_color='white',             # Color of the text
+        polar=dict(
+            angularaxis=dict(
+                gridcolor='black',  # Color of the grid lines
+                tickfont=dict(color='white')  # Color of the angular axis ticks
+            ),
+            radialaxis=dict(
+                gridcolor='gray',  # Color of the radial grid lines
+                tickfont=dict(color='blue',
+                            weight = 'bold')  # Color of the radial axis ticks
+            )
+        ), 
+    )
+
+    # Plotting the radar chart
+    col2.plotly_chart(fig)
+    
+    
