@@ -1,3 +1,4 @@
+import os 
 def paint(primary, secondary):
     from PIL import Image, ImageDraw
     # Coordinates for the polygon
@@ -194,7 +195,7 @@ def paint(primary, secondary):
             ]
         }
 
-    image_path = r'C:\Users\MikolajPawlak\Documents\GitHub\Public-projects\Hevy Workout App Analytics Dashboard\human_body.jpg'
+    image_path = os.path.dirname(os.path.abspath(__file__)) + '\\human_body.jpg'
     image = Image.open(image_path)
     draw = ImageDraw.Draw(image)
 
