@@ -70,7 +70,7 @@ if choice == 'Get your data':
         HEVY_API_KEY = st.text_input("API_KEY")
         api_ready_button = st.button("Download data")
         if HEVY_API_KEY and api_ready_button:
-            st.write(":red[Please don't leave this page]. Data download process started...")
+            st.write(":red[Please don't leave this page.] Data download process started...")
             
             # Run the script with the argument and print logs
             command = f'python Hevy_API_workouts_app.py --HEVY_API_KEY {HEVY_API_KEY}'

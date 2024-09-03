@@ -195,7 +195,7 @@ def paint(primary, secondary):
             ]
         }
 
-    image_path = os.path.dirname(os.path.abspath(__file__)) + '\\human_body.jpg'
+    image_path = os.path.dirname(os.path.abspath(__file__)) + '\\human_body_transparent.png'
     image = Image.open(image_path)
     draw = ImageDraw.Draw(image)
 
@@ -204,7 +204,7 @@ def paint(primary, secondary):
         for cords in coordinates_list:
             # Convert coordinates to integer tuples
             polygon_coords = [(int(x), int(y)) for x, y in cords]
-            fill_color = (200, 0, 0, 125)  # 128 is 50% transparency (255 is fully opaque, 0 is fully transparent)
+            fill_color = (255, 0, 0, 125)  # 128 is 50% transparency (255 is fully opaque, 0 is fully transparent)
             # Draw the polygon with specified fill and outline colors
             draw.polygon(polygon_coords, outline='red', fill=fill_color)
 
@@ -213,7 +213,7 @@ def paint(primary, secondary):
         for cords in coordinates_list:
             # Convert coordinates to integer tuples
             polygon_coords = [(int(x), int(y)) for x, y in cords]
-            fill_color = (125, 0, 0, 125)  # 128 is 50% transparency (255 is fully opaque, 0 is fully transparent)
+            fill_color = (200, 0, 0, 125)  # 128 is 50% transparency (255 is fully opaque, 0 is fully transparent)
             # Draw the polygon with specified fill and outline colors
             draw.polygon(polygon_coords, outline='red', fill=fill_color)
     return image

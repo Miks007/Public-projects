@@ -178,7 +178,7 @@ def get_templates(HEVY_API_KEY, df):
                 data = response.json()
                 data_list.append(data)
                 df_decoded_templates = pd.DataFrame(data_list)
-            if cntr % 25 == 0 or cntr == templates_total:
+            if cntr % 10 == 0 or cntr == templates_total:
                 logging.info(f"Decoded templates {cntr}/{templates_total}.")
         logging.info(f"All templates decoded.")
         df_full = df.merge(df_decoded_templates, how = 'left', left_on= 'exercise_template_id', right_on='id')

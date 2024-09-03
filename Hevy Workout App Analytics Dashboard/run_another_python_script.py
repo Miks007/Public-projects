@@ -36,7 +36,7 @@ def run_sub_script_with_progress(command):
     
     # Find the latest log file dynamically
     try:
-        time.sleep(2)
+        time.sleep(3)
         log_file_path = find_latest_log_file()
         #st.write(f"Reading from log file: {log_file_path}")
 
@@ -47,27 +47,27 @@ def run_sub_script_with_progress(command):
                 if 'Workout pages count:' in line:
                     total_pages = int(line.split('Workout pages count:')[1].split('.')[0])
                     page = 0
-                    download_progress_bar = st.progress(page, text = 'Downloading the data...')
+                    download_progress_bar = st.progress(0, text = 'Downloading the data...')
                     decode_progress_bar = st.progress(0, text = 'Decoding the templates...')
-            try:
-                    # Continuously read new lines from the log file
-                    while process.poll() is None:  # While script B is running
-                        line = log_file.readline()
-                        if line:
-                            #st.write(line, end='')  # Print each line without adding extra newlines
-                            if 'Fetching workouts from page: ' in line:
-                                page = int(line.split('Fetching workouts from page: ')[1].split(' (pageSize:10)')[0])
-                                download_progress_bar.progress(page/total_pages, text = f'Downloading the data... {page}/{total_pages}')
-                            if 'Decoded templates ' in line:
-                                templates_decoded = int(line.split('Decoded templates ')[1].split('/')[0])
-                                templates_total = int(line.split('Decoded templates ')[1].split('/')[1].split('.')[0])
-                                decode_progress_bar.progress(templates_decoded/templates_total, text = f'Decoding templates... {templates_decoded}/{templates_total}')
-                        else:
-                            time.sleep(0.1)  # Wait a bit before trying to read again
-            except KeyboardInterrupt:
-                # If the user interrupts, terminate the process
-                process.terminate()
-                st.write("Process terminated.")
+                    try:
+                            # Continuously read new lines from the log file
+                            while process.poll() is None:  # While script B is running
+                                line = log_file.readline()
+                                if line:
+                                    #st.write(line, end='')  # Print each line without adding extra newlines
+                                    if 'Fetching workouts from page: ' in line:
+                                        page = int(line.split('Fetching workouts from page: ')[1].split(' (pageSize:10)')[0])
+                                        download_progress_bar.progress(page/total_pages, text = f'Downloading the workout pages... {page}/{total_pages}')
+                                    if 'Decoded templates ' in line:
+                                        templates_decoded = int(line.split('Decoded templates ')[1].split('/')[0])
+                                        templates_total = int(line.split('Decoded templates ')[1].split('/')[1].split('.')[0])
+                                        decode_progress_bar.progress(templates_decoded/templates_total, text = f'Decoding templates... {templates_decoded}/{templates_total}')
+                                else:
+                                    time.sleep(0.1)  # Wait a bit before trying to read again
+                    except KeyboardInterrupt:
+                        # If the user interrupts, terminate the process
+                        process.terminate()
+                        st.write("Process terminated.")
 
     except FileNotFoundError as e:
         st.write(e)
