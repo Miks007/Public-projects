@@ -200,7 +200,10 @@ def paint(primary, secondary):
     draw = ImageDraw.Draw(image)
 
     for body_part in primary:
-        coordinates_list = body_dict[body_part]
+        try:
+            coordinates_list = body_dict[body_part]
+        except:
+            pass
         for cords in coordinates_list:
             # Convert coordinates to integer tuples
             polygon_coords = [(int(x), int(y)) for x, y in cords]
@@ -209,7 +212,10 @@ def paint(primary, secondary):
             draw.polygon(polygon_coords, outline='red', fill=fill_color)
 
     for body_part in secondary:
-        coordinates_list = body_dict[body_part]
+        try:
+            coordinates_list = body_dict[body_part]
+        except:
+            pass
         for cords in coordinates_list:
             # Convert coordinates to integer tuples
             polygon_coords = [(int(x), int(y)) for x, y in cords]

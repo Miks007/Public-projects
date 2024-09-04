@@ -135,10 +135,10 @@ elif choice == 'Overall analysis':
         one_month_ago_utc = datetime.now(pytz.utc) - relativedelta(months=1)
 
         ##### Metric 1 - number of workouts
-        # Delta 1 - diffrence workouts number in the last month
+        # Delta 1 - diffrence workouts number last month
         num_of_workouts = len(df['workout_id'].unique())
         delta_1 = len(df['workout_id'][df['start_time'] >= one_month_ago_utc].unique())
-        delta_1 = str(delta_1) + ' in the last month'
+        delta_1 = str(delta_1) + ' last month'
         
         ##### Metric 2 - average workout time
         # Delta 2 - diffrence workout time vs last month
@@ -157,27 +157,31 @@ elif choice == 'Overall analysis':
         
         # Find out the delta (average time vs average time last month)
         time_format = "%H:%M:%S"
-        if average_time >= average_time_this_month:
-            delta_2 = datetime.strptime(average_time_formatted, time_format) - datetime.strptime(average_time_this_month_formatted, time_format)
-            sign = '-'
+        if not pd.isna(average_time_this_month):
+            if average_time >= average_time_this_month:
+                delta_2 = datetime.strptime(average_time_formatted, time_format) - datetime.strptime(average_time_this_month_formatted, time_format)
+                sign = '-'
+            else:
+                delta_2 = datetime.strptime(average_time_this_month_formatted, time_format) - datetime.strptime(average_time_formatted, time_format)
+                sign = '+'
+            # Convert timedelta to total seconds
+            total_seconds = int(delta_2.total_seconds())
+            hours = total_seconds // 3600
+            minutes = (total_seconds % 3600) // 60
+            seconds = total_seconds % 60   
+            # Format the delta_2 output
+            delta_2 = f"{sign}{hours:02}:{minutes:02}:{seconds:02} last month"
         else:
-            delta_2 = datetime.strptime(average_time_this_month_formatted, time_format) - datetime.strptime(average_time_formatted, time_format)
-            sign = '+'
-        
-        # Convert timedelta to total seconds
-        total_seconds = int(delta_2.total_seconds())
-        hours = total_seconds // 3600
-        minutes = (total_seconds % 3600) // 60
-        seconds = total_seconds % 60   
-        # Format the delta_2 output
-        delta_2 = f"{sign}{hours:02}:{minutes:02}:{seconds:02} in the last month"
+            sing = ''
+            delta_2 = '0 last month'
         
         ###### Metric 3 - average number of exercises per workout
         # delta_3  - average number of exercises per workout last month
         average_exercises = round(grouped_workouts['num_exercises'].mean(),2)
         average_exercises_last_month = round(grouped_workouts['num_exercises'][grouped_workouts['start_time'] >= one_month_ago_utc].mean(),2)
-        delta_3 = f"{round(average_exercises_last_month - average_exercises, 2)} in the last month"
-        
+        delta_3 = round(average_exercises_last_month - average_exercises, 2)
+        delta_3 = np.nan_to_num(delta_3, nan = 0)
+        delta_3 = f"{delta_3} last month"
         ###### Metric 4 - average number of sets per exercise
         # delta_4 - average number of sets per exercise last month
         grouped_exercises = df.groupby(['workout_id','excercise_title']).agg(
@@ -188,22 +192,32 @@ elif choice == 'Overall analysis':
         ).reset_index()
         average_sets = round(grouped_exercises['num_of_sets'].mean(),2)
         average_sets_last_month = round(grouped_exercises_last_month['num_of_sets'].mean(),2)
-        delta_4 = f"{round(average_sets_last_month - average_sets,2)} in the last month"
-
-
+        delta_4 = round(average_sets_last_month - average_sets,2)
+        delta_4 = np.nan_to_num(delta_4, nan = 0)
+        delta_4 = f"{delta_4} last month"
+        
+        ##### Define colors for deltas
+        def check_nan(value):
+            return 'normal' if not '0 last month' in value else 'off'
+        
+        delta_1_c = check_nan(delta_1)
+        delta_2_c = check_nan(delta_2)
+        delta_3_c = check_nan(delta_3)
+        delta_4_c = check_nan(delta_4)
+        
         ###### Display metrics and their deltas 
         metric_row = st.columns(4)
-
+        
         for col in metric_row:
             with col.container(border= True):
                 if col == metric_row[0]:
-                    st.metric("Workouts", num_of_workouts, delta=delta_1, delta_color="normal", help=None, label_visibility="visible")
+                    st.metric("Workouts", num_of_workouts, delta=delta_1, delta_color=delta_1_c, help=None, label_visibility="visible")
                 elif col == metric_row[1]:
-                    st.metric("Average Workout Time", average_time_formatted, delta=delta_2, delta_color="normal", help=None, label_visibility="visible")
+                    st.metric("Average Workout Time", average_time_formatted, delta=delta_2, delta_color=delta_2_c, help=None, label_visibility="visible")
                 elif col == metric_row[2]:
-                    st.metric("Average Number Of Exercises Per Workout", average_exercises, delta=delta_3, delta_color="normal", help=None, label_visibility="visible")
+                    st.metric("Average Number Of Exercises Per Workout", average_exercises, delta=delta_3, delta_color=delta_3_c, help=None, label_visibility="visible")
                 elif col == metric_row[3]:
-                    st.metric("Average Number Of Sets Per Exercise", average_sets, delta=delta_4, delta_color="normal", help=None, label_visibility="visible")
+                    st.metric("Average Number Of Sets Per Exercise", average_sets, delta=delta_4, delta_color=delta_4_c, help=None, label_visibility="visible")
             
             
             #######################################
