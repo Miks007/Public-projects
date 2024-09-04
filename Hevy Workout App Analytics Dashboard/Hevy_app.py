@@ -289,7 +289,7 @@ elif choice == 'Muscle group analysis':
         df['primary_muscle_group'] = [[muscle] for muscle in df['primary_muscle_group']]
         
         #col1, col2 = st.columns([2.55,1])
-        col1, col2 = st.columns([2.75,1])
+        col1, col2 = st.columns([2.75, 1])
         col1.dataframe(df[['workout_title', 'excercise_title', 'primary_muscle_group', 'secondary_muscle_groups', 'weight_kg', 'reps', 'distance_meters', 'duration_minutes', 'is_custom']])
         
         df_temp = df[['workout_id', 'workout_title', 'excercise_title', 'primary_muscle_group', 'secondary_muscle_groups', 'weight_kg', 'reps', 'distance_meters', 'duration_minutes']]
@@ -303,10 +303,10 @@ elif choice == 'Muscle group analysis':
         }).reset_index()
         
         # Rename columns in a more concise way
-        grouped['max_reps'] = [max(reps) if reps else '' for reps in grouped['reps']]
-        grouped['max_weight_kg'] = [max(reps) if reps else '' for reps in grouped['weight_kg']]
-        grouped['max_distance_meters'] = [max(reps) if reps else '' for reps in grouped['distance_meters']]
-        grouped['max_duration_minutes'] = [max(reps) if reps else '' for reps in grouped['duration_minutes']]
+        grouped['max_reps'] = [max(reps) if reps else np.nan for reps in grouped['reps']]
+        grouped['max_weight_kg'] = [max(reps) if reps else np.nan for reps in grouped['weight_kg']]
+        grouped['max_distance_meters'] = [max(reps) if reps else np.nan for reps in grouped['distance_meters']]
+        grouped['max_duration_minutes'] = [max(reps) if reps else np.nan for reps in grouped['duration_minutes']]
 
         col1.dataframe(
         grouped[['excercise_title', 'max_reps', 'max_weight_kg', 'max_distance_meters','max_duration_minutes']])
@@ -326,12 +326,6 @@ elif choice == 'Muscle group analysis':
         # Prepare data for radar chart
         df_grouped_we = df_grouped_we.drop_duplicates()
         df_radar = calculate_radar_data(df_grouped_we)
-
-        # df_radar = pd.DataFrame(dict(
-        #     r=[5, 5, 2, 5, 3],
-        #     theta=['core','legs','arms',
-        #         'back', 'chest']))
-        
         
         fig = px.line_polar(df_radar, r='count', theta='radar_category', line_close=True)
         fig.update_traces(fill='toself')
