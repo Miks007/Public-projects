@@ -18,20 +18,18 @@ import plotly.express as px
 
 from find_recent_workout_file import find_recent_workout_file
 from human_body_painting import paint
-from run_another_python_script import find_latest_log_file
-from run_another_python_script import run_sub_script_with_progress
+from run_another_python_script import find_latest_log_file, run_sub_script_with_progress
 from radar_chart import calculate_radar_data
+
+def aggregate_to_list(series):
+        # Filter out NaN values and convert to list
+        return series.dropna().tolist()
 
 # Specify the path to the directory of the script
 app_directory = os.path.dirname(os.path.abspath(__file__))
 
 # Change the current working directory to the specified directory
 os.chdir(app_directory)
-
-
-def aggregate_to_list(series):
-        # Filter out NaN values and convert to list
-        return series.dropna().tolist()
 
 st.set_page_config(layout="wide")
 st.title(":red[Hevy workouts analysis] ")
@@ -41,10 +39,12 @@ st.title(":red[Hevy workouts analysis] ")
 ############### CHOISES ###############
 #######################################
 
+# Add radio ticker to choose tab
 choice = st.radio('Choose option',
         ['Get your data','Overall analysis', 'Muscle group analysis'],
         horizontal=True)
 
+# try to find the most recent file with workout data
 default_file = find_recent_workout_file(app_directory)
 try:
     # read data and prepare it for the app
@@ -73,9 +73,9 @@ if choice == 'Get your data':
         api_ready_button = st.button("Download data")
         if HEVY_API_KEY and api_ready_button:
             st.write(":red[Please don't leave this page.] Data download process started...")
-            
-            # Run the script with the argument and print logs
+            # Run the script with the API_KEY variable
             command = f'python Hevy_API_workouts_app.py --HEVY_API_KEY {HEVY_API_KEY}'
+            # Apply function to display progress bars and status messages based on another script logs
             run_sub_script_with_progress(command)
             st.write(":green[Data has been dowloaded and decoded. Analysis tabs are ready do explore!]")
             st.success("Done!")
@@ -134,25 +134,33 @@ elif choice == 'Overall analysis':
         #######################################
         one_month_ago_utc = datetime.now(pytz.utc) - relativedelta(months=1)
 
-        ##### Metric 1 - number of workouts
-        # Delta 1 - diffrence workouts number last month
+        ###### Metric 1 - number of workouts
+        ##### Delta 1 - diffrence workouts number last month
         num_of_workouts = len(df['workout_id'].unique())
-        delta_1 = len(df['workout_id'][df['start_time'] >= one_month_ago_utc].unique())
-        delta_1 = str(delta_1) + ' last month'
         
-        ##### Metric 2 - average workout time
-        # Delta 2 - diffrence workout time vs last month
+        num_of_workouts_last_month = len(df['workout_id'][df['start_time'] >= one_month_ago_utc].unique())
+        delta_1 = str(num_of_workouts_last_month) + ' last month'
+        
+        ###### Metric 2 - average workout time
+        ##### Delta 2 - diffrence workout time vs last month
+        # Compute workout duration and total weight
         df['time'] = df['end_time'] - df['start_time']
         df['weight_total_kg'] = df['reps'] * df['weight_kg']
+        
+        # Aggregate workout data by time
         grouped_workouts = df.groupby(['workout_id', 'time', 'start_time', 'end_time' ,'year']).agg(
             num_exercises=('excercise_title', 'nunique'),
             weight_total_kg=('weight_total_kg', 'sum') # Sum of weight per workout# Count unique exercises
         ).reset_index()
         grouped_workouts.index +=1
-        # calculate average times and format them
+        
+        # Calculate average times and format them
         average_time = grouped_workouts.time.apply(pd.to_timedelta).mean()
         average_time_formatted = str(average_time).split()[-1].split('.')[0]
-        average_time_this_month = grouped_workouts[grouped_workouts['start_time'] >= one_month_ago_utc]['time'].apply(pd.to_timedelta).mean()
+        
+        # Filter data for the last month and calculate average time
+        grouped_workouts_last_month = grouped_workouts[grouped_workouts['start_time'] >= one_month_ago_utc]
+        average_time_this_month = grouped_workouts_last_month['time'].apply(pd.to_timedelta).mean()
         average_time_this_month_formatted = str(average_time_this_month).split()[-1].split('.')[0]
         
         # Find out the delta (average time vs average time last month)
@@ -164,11 +172,13 @@ elif choice == 'Overall analysis':
             else:
                 delta_2 = datetime.strptime(average_time_this_month_formatted, time_format) - datetime.strptime(average_time_formatted, time_format)
                 sign = '+'
+                
             # Convert timedelta to total seconds
             total_seconds = int(delta_2.total_seconds())
             hours = total_seconds // 3600
             minutes = (total_seconds % 3600) // 60
             seconds = total_seconds % 60   
+            
             # Format the delta_2 output
             delta_2 = f"{sign}{hours:02}:{minutes:02}:{seconds:02} last month"
         else:
@@ -176,24 +186,33 @@ elif choice == 'Overall analysis':
             delta_2 = '0 last month'
         
         ###### Metric 3 - average number of exercises per workout
-        # delta_3  - average number of exercises per workout last month
+        ##### delta_3  - average number of exercises per workout last month
         average_exercises = round(grouped_workouts['num_exercises'].mean(),2)
-        average_exercises_last_month = round(grouped_workouts['num_exercises'][grouped_workouts['start_time'] >= one_month_ago_utc].mean(),2)
+        average_exercises_last_month = round(
+            grouped_workouts['num_exercises'][grouped_workouts['start_time'] >= one_month_ago_utc].mean(),2
+            )
         delta_3 = round(average_exercises_last_month - average_exercises, 2)
         delta_3 = np.nan_to_num(delta_3, nan = 0)
         delta_3 = f"{delta_3} last month"
         ###### Metric 4 - average number of sets per exercise
         # delta_4 - average number of sets per exercise last month
         grouped_exercises = df.groupby(['workout_id','excercise_title']).agg(
-            num_of_sets=('set_index', 'count')  # Average sets per workout
+            num_of_sets=('set_index', 'count')  # Count the number of sets
         ).reset_index()
+        
         grouped_exercises_last_month = df[df['start_time'] >= one_month_ago_utc].groupby(['workout_id','excercise_title']).agg(
-            num_of_sets=('set_index', 'count')  # Average sets per workout
+            num_of_sets=('set_index', 'count')  # Count the number of sets
         ).reset_index()
+        
+        # Calculate averages
         average_sets = round(grouped_exercises['num_of_sets'].mean(),2)
         average_sets_last_month = round(grouped_exercises_last_month['num_of_sets'].mean(),2)
+        
+        # Calculate delta and handle NaN
         delta_4 = round(average_sets_last_month - average_sets,2)
         delta_4 = np.nan_to_num(delta_4, nan = 0)
+        
+        # Format the result
         delta_4 = f"{delta_4} last month"
         
         ##### Define colors for deltas
@@ -220,26 +239,18 @@ elif choice == 'Overall analysis':
                     st.metric("Average Number Of Sets Per Exercise", average_sets, delta=delta_4, delta_color=delta_4_c, help=None, label_visibility="visible")
             
             
-            #######################################
-            ############### CHARTS ################
-            #######################################
-
-        # Show line chart
-        # container_chart = st.container(border=True)
-        # container_chart.line_chart(grouped_workouts[['num_exercises', 'start_time' ,'year']], 
-        #             x = 'start_time', y = 'num_exercises', color = 'year', 
-        #             x_label ='Workout_number', y_label ='Number of Exercises')
+        #######################################
+        ############### CHARTS ################
+        #######################################
         
-            # Show line chart
+        # Show line chart
         container_chart = st.container(border=True)
         container_chart.scatter_chart(grouped_workouts[['num_exercises', 'start_time' ,'year', 'weight_total_kg']], 
                     x = 'start_time', y = 'weight_total_kg', color = 'year', size ='num_exercises',
                     x_label ='Workout_number', y_label ='Total Weight in Kg', height = 500)
-
+        
         # Show dataframe
         st.dataframe(df)
-        # workout time
-        # load 
 
 ##############################################################################
 # Muscle group analysis Tab 
@@ -250,7 +261,6 @@ elif choice == 'Muscle group analysis':
     if default_file == 'No matching files found.':
         st.write(":red[Please download your traning data or add a demo file to the app directory in order to use this analysis tab.]")
     else:
-
         #######################################
         ############### FILTERS ###############
         #######################################
@@ -285,11 +295,14 @@ elif choice == 'Muscle group analysis':
         # Filter the dataframe
         # 1. Date
         df = df[(df['start_time'].dt.date >= selected_date[0])  & (df['end_time'].dt.date <= selected_date[1])]
+        
         # Make a copy of df for radar
         df_grouped_we = df[['workout_id', 'primary_muscle_group']].copy()
+        
         # 2. Exercise title
         if selected_exercises:
             df = df[df['excercise_title'].isin(selected_exercises)]
+            
         # 3. Muscle, don't filter if:
         # - if no filter is selected
         if primary_muscle_groups_choice:
@@ -300,13 +313,15 @@ elif choice == 'Muscle group analysis':
         if selected_exercises and (not primary_muscle_groups_choice) and (not secondary_muscle_groups_choice):
             primary_muscle_groups_choice = sorted(df.primary_muscle_group.unique())
             secondary_muscle_groups_choice = pd.unique([item for sublist in df['secondary_muscle_groups'] for item in sublist])
+            
         df['primary_muscle_group'] = [[muscle] for muscle in df['primary_muscle_group']]
         
-        #col1, col2 = st.columns([2.55,1])
+        # Create columns for: dataframe, body painting image
         col1, col2 = st.columns([2.75, 1])
         col1.dataframe(df[['workout_title', 'excercise_title', 'primary_muscle_group', 'secondary_muscle_groups', 'weight_kg', 'reps', 'distance_meters', 'duration_minutes', 'is_custom']])
         
         df_temp = df[['workout_id', 'workout_title', 'excercise_title', 'primary_muscle_group', 'secondary_muscle_groups', 'weight_kg', 'reps', 'distance_meters', 'duration_minutes']]
+        
         # Group by 'excercise_title' and aggregate using the custom function
         grouped = df.groupby('excercise_title').agg({
         'reps': aggregate_to_list,
@@ -321,28 +336,38 @@ elif choice == 'Muscle group analysis':
         grouped['max_weight_kg'] = [max(reps) if reps else np.nan for reps in grouped['weight_kg']]
         grouped['max_distance_meters'] = [max(reps) if reps else np.nan for reps in grouped['distance_meters']]
         grouped['max_duration_minutes'] = [max(reps) if reps else np.nan for reps in grouped['duration_minutes']]
-
+        
+        # Show dataframe
         col1.dataframe(
         grouped[['excercise_title', 'max_reps', 'max_weight_kg', 'max_distance_meters','max_duration_minutes']])
-
-
-        # Show image
+        
+        ##### BODY IMAGE
+        # Paint body image
         image = paint(primary_muscle_groups_choice, secondary_muscle_groups_choice)
+        
+        # Resize image
         new_size = (int(image.width // 2.5), int(image.height // 2.5))
         image = image.resize(new_size, Image.LANCZOS)
         image_bytes = io.BytesIO()
+        
+        # Save image
         image.save(image_bytes, format='PNG')
         image_bytes.seek(0)
-
-        # Display the image in Streamlit
+        
+        # Show image
         col2.image(image_bytes, caption='Workout', use_column_width=False)
         
-        # Prepare data for radar chart
+        ##### RADAR CHART
+        # Use dataframe that has only date filter applied and drop duplicates
         df_grouped_we = df_grouped_we.drop_duplicates()
+        
+        # Count exercices by grouped primary muscles 
         df_radar = calculate_radar_data(df_grouped_we)
         
+        # Create radar chart
         fig = px.line_polar(df_radar, r='count', theta='radar_category', line_close=True)
         fig.update_traces(fill='toself')
+        
         # Update layout for transparent background
         fig.update_layout(
             paper_bgcolor='rgba(0,0,0,0)',  # Transparent background for the entire figure area
@@ -360,7 +385,8 @@ elif choice == 'Muscle group analysis':
                 )
             ), 
         )
-        # Plotting the radar chart
+        
+        # Show the radar chart
         col2.plotly_chart(fig)
         
         
