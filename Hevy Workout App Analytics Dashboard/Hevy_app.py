@@ -3,6 +3,7 @@
 #  streamlit run "C:\Users\mikip\OneDrive\Dokumenty\GitHub\Public-projects\Hevy Workout App Analytics Dashboard\Hevy_app.py"
 import streamlit as st
 import pandas as pd
+import numpy as np
 import os
 import io
 from PIL import Image, ImageDraw
@@ -19,6 +20,7 @@ from find_recent_workout_file import find_recent_workout_file
 from human_body_painting import paint
 from run_another_python_script import find_latest_log_file
 from run_another_python_script import run_sub_script_with_progress
+from radar_chart import calculate_radar_data
 
 # Specify the path to the directory of the script
 app_directory = os.path.dirname(os.path.abspath(__file__))
@@ -269,6 +271,8 @@ elif choice == 'Muscle group analysis':
         # Filter the dataframe
         # 1. Date
         df = df[(df['start_time'].dt.date >= selected_date[0])  & (df['end_time'].dt.date <= selected_date[1])]
+        # Make a copy of df for radar
+        df_grouped_we = df[['workout_id', 'primary_muscle_group']].copy()
         # 2. Exercise title
         if selected_exercises:
             df = df[df['excercise_title'].isin(selected_exercises)]
@@ -319,11 +323,17 @@ elif choice == 'Muscle group analysis':
         # Display the image in Streamlit
         col2.image(image_bytes, caption='Workout', use_column_width=False)
         
-        df_radar = pd.DataFrame(dict(
-            r=[5, 5, 2, 5, 3],
-            theta=['core','legs','arms',
-                'back', 'chest']))
-        fig = px.line_polar(df_radar, r='r', theta='theta', line_close=True)
+        # Prepare data for radar chart
+        df_grouped_we = df_grouped_we.drop_duplicates()
+        df_radar = calculate_radar_data(df_grouped_we)
+
+        # df_radar = pd.DataFrame(dict(
+        #     r=[5, 5, 2, 5, 3],
+        #     theta=['core','legs','arms',
+        #         'back', 'chest']))
+        
+        
+        fig = px.line_polar(df_radar, r='count', theta='radar_category', line_close=True)
         fig.update_traces(fill='toself')
         # Update layout for transparent background
         fig.update_layout(
