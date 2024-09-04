@@ -123,7 +123,7 @@ elif choice == 'Overall analysis':
         if primary_muscle_groups_choice:
             df = df[(df['primary_muscle_group'].isin(primary_muscle_groups_choice))]
         if secondary_muscle_groups_choice:
-            df = df[(df['secondary_muscle_groups'].isin(secondary_muscle_groups_choice))]
+            df = df[df['secondary_muscle_groups'].apply(lambda x: any(muscle in x for muscle in secondary_muscle_groups_choice))]
             
         if (not primary_muscle_groups_choice) and (not secondary_muscle_groups_choice):
             primary_muscle_groups_choice = sorted(df.primary_muscle_group.unique())
@@ -295,7 +295,7 @@ elif choice == 'Muscle group analysis':
         if primary_muscle_groups_choice:
             df = df[(df['primary_muscle_group'].isin(primary_muscle_groups_choice))]
         if secondary_muscle_groups_choice:
-            df = df[(df['secondary_muscle_groups'].isin(secondary_muscle_groups_choice))]
+            df = df[df['secondary_muscle_groups'].apply(lambda x: any(muscle in x for muscle in secondary_muscle_groups_choice))]
             
         if selected_exercises and (not primary_muscle_groups_choice) and (not secondary_muscle_groups_choice):
             primary_muscle_groups_choice = sorted(df.primary_muscle_group.unique())
