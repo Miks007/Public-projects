@@ -25,28 +25,28 @@ Below you'll find information about the most recent projects and their purposes.
 
 ● **Status**: Completed ✅
 
-### 5. [Correcting Document Rotation](https://github.com/Miks007/Public-projects/tree/main/Correct%20Document%20rotation) 📄
+### 4. [Correcting Document Rotation](https://github.com/Miks007/Public-projects/tree/main/Correct%20Document%20rotation) 📄
 ● **Description**: This project corrects document rotation using various computer vision tools, including Hough lines and pytesseract OCR, to properly align text and images.
 
 ● **Purpose**: To work with images and learn different image processing techniques.
 
 ● **Status**: Completed ✅
 
-### 6. [Find Circles with Dots](https://github.com/Miks007/Public-projects/blob/main/Find%20circles%20with%20dots/code.ipynb) 🎯
+### 5. [Find Circles with Dots](https://github.com/Miks007/Public-projects/blob/main/Find%20circles%20with%20dots/code.ipynb) 🎯
 ● **Description**: This project uses computer vision tools to detect shapes (circles) and determine which of them contain dots. The tools used include HoughCircles and cv2.SimpleBlobDetector.
 
 ● **Purpose**: To explore and learn computer vision detection tools.
 
 ● **Status**: Completed ✅
 
-### 7. [Find Differences Between Two Images](https://github.com/Miks007/Public-projects/blob/main/Find%20diffrences%20between%20two%20images/Image_diffrences.ipynb) 🔍
+### 6. [Find Differences Between Two Images](https://github.com/Miks007/Public-projects/blob/main/Find%20diffrences%20between%20two%20images/Image_diffrences.ipynb) 🔍
 ● **Description**: This project involves identifying small differences between two almost identical images of Rick and Morty using computer vision tools. The tools used include cv2 preprocessing, ImageChops difference and cv2 absolute difference.
 
 ● **Purpose**: To use computer vision tools to detect subtle differences between images.
 
 ● **Status**: Completed ✅
 
-### 8. [Hevy Workout App Analytics Dashboard](https://github.com/Miks007/Public-projects/blob/main/Hevy%20Workout%20App%20Analytics%20Dashboard/SUMMARY/Overall_analysis.gif) 🏋️‍♂️
+### 7. [Hevy Workout App Analytics Dashboard](https://github.com/Miks007/Public-projects/blob/main/Hevy%20Workout%20App%20Analytics%20Dashboard/SUMMARY/Overall_analysis.gif) 🏋️‍♂️
 ● **Description:** This project downloads workout data from your Hevy app, transforms it, and displays it on an analytics dashboard. It provides a detailed overview of your workout history and progress, making it easy to inspect your performance and improvements over time.
 
 ● **Purpose:** To create a user-friendly dashboard for tracking and analyzing workout data for better fitness insights, while also experimenting with Streamlit app creation.
