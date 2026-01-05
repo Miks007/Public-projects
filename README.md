@@ -9,7 +9,7 @@ Below you'll find information about the most recent projects and their purposes.
 
 ● **Purpose:** To automate the process of job searching and practice web scraping, data processing, and keyword-based filtering.
 
-● **Status:** In Progress 👨‍💻
+● **Status:** On Hold 👨‍💻
 
 ### 2. [Rice Image Classification - CNNs](https://github.com/Miks007/Public-projects/blob/main/RiceImageClassification.ipynb) 🌾🧠
 ● **Description:** This project uses Convolutional Neural Networks (CNNs) to classify images of different rice grain types. The model was trained and evaluated on a labeled dataset to accurately distinguish between rice varieties based on visual characteristics.
